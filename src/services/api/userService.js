@@ -1,27 +1,38 @@
 import { toast } from 'react-toastify';
 
 class UserService {
-  constructor() {
+constructor() {
     this.apperClient = null;
-    this.initializeClient();
+    // Don't initialize immediately - use lazy initialization
   }
 
-  initializeClient() {
-    if (window.ApperSDK) {
+initializeClient() {
+    // Check if SDK is available
+    if (!window.ApperSDK) {
+      console.warn('Apper SDK not yet loaded. Waiting...');
+      return false;
+    }
+
+    try {
       const { ApperClient } = window.ApperSDK;
       this.apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize ApperClient:', error);
+      return false;
     }
   }
 
 async getStats() {
     try {
+      // Ensure client is initialized
       if (!this.apperClient) {
-        this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient is not available. Please ensure the Apper SDK is loaded.');
+        const initialized = this.initializeClient();
+        if (!initialized || !this.apperClient) {
+          throw new Error('Apper SDK is not loaded yet. Please wait for the application to fully initialize.');
         }
       }
       const params = {
@@ -96,10 +107,11 @@ async getStats() {
 
 async updateStats(updates) {
     try {
+      // Ensure client is initialized
       if (!this.apperClient) {
-        this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient is not available. Please ensure the Apper SDK is loaded.');
+        const initialized = this.initializeClient();
+        if (!initialized || !this.apperClient) {
+          throw new Error('Apper SDK is not loaded yet. Please wait for the application to fully initialize.');
         }
       }
       // Get current stats first to find the record ID
