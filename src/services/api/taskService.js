@@ -1,25 +1,53 @@
 import { toast } from 'react-toastify';
 
 class TaskService {
-  constructor() {
+constructor() {
     this.apperClient = null;
+    this.isInitializing = false;
     this.initializeClient();
   }
 
-  initializeClient() {
-    if (window.ApperSDK) {
-      const { ApperClient } = window.ApperSDK;
-      this.apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
+  async initializeClient(retryCount = 0, maxRetries = 5) {
+    if (this.apperClient || this.isInitializing) return;
+    
+    this.isInitializing = true;
+    
+    try {
+      if (window.ApperSDK) {
+        const { ApperClient } = window.ApperSDK;
+        this.apperClient = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+        });
+        this.isInitializing = false;
+        return;
+      }
+      
+      // If SDK not available and we haven't exceeded retries, wait and try again
+      if (retryCount < maxRetries) {
+        const delay = Math.pow(2, retryCount) * 100; // Exponential backoff
+        setTimeout(() => {
+          this.isInitializing = false;
+          this.initializeClient(retryCount + 1, maxRetries);
+        }, delay);
+      } else {
+        this.isInitializing = false;
+        console.error('ApperSDK not available after maximum retries');
+      }
+    } catch (error) {
+      this.isInitializing = false;
+      console.error('Error initializing ApperClient:', error);
     }
   }
 
-  async getAll() {
+async getAll() {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -54,10 +82,14 @@ class TaskService {
     }
   }
 
-  async getById(id) {
+async getById(id) {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -90,8 +122,13 @@ class TaskService {
   }
 
   async create(taskData) {
-    try {
-      if (!this.apperClient) this.initializeClient();
+try {
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       
       const params = {
         records: [{
@@ -144,10 +181,14 @@ class TaskService {
     }
   }
 
-  async update(id, updates) {
+async update(id, updates) {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       const updateData = {
         Id: parseInt(id)
       };
@@ -204,8 +245,13 @@ class TaskService {
   }
 
   async delete(id) {
-    try {
-      if (!this.apperClient) this.initializeClient();
+try {
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       
       const params = {
         RecordIds: [parseInt(id)]
@@ -245,10 +291,14 @@ class TaskService {
     }
   }
 
-  async getByPriority(priority) {
+async getByPriority(priority) {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -290,10 +340,14 @@ class TaskService {
     }
   }
 
-  async getCompleted() {
+async getCompleted() {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -335,10 +389,14 @@ class TaskService {
     }
   }
 
-  async getPending() {
+async getPending() {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -381,8 +439,13 @@ class TaskService {
   }
 
   async getTodayTasks() {
-    try {
-      if (!this.apperClient) this.initializeClient();
+try {
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       
       const today = new Date().toISOString().split('T')[0];
       
@@ -427,10 +490,14 @@ class TaskService {
     }
   }
 
-  async reorderTasks(taskIds) {
+async reorderTasks(taskIds) {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        await this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
+        }
+      }
       const records = taskIds.map((id, index) => ({
         Id: parseInt(id),
         order: index
