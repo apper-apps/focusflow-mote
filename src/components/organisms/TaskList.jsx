@@ -13,7 +13,7 @@ const TaskList = ({ onTaskComplete, isMinimalMode = false, filterPriority = 'all
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadTasks = async () => {
+const loadTasks = async () => {
     try {
       setLoading(true);
       setError('');
@@ -30,7 +30,7 @@ const TaskList = ({ onTaskComplete, isMinimalMode = false, filterPriority = 'all
     loadTasks();
   }, []);
 
-  const handleAddTask = async (taskData) => {
+const handleAddTask = async (taskData) => {
     try {
       const newTask = await TaskService.create(taskData);
       setTasks(prev => [...prev, newTask]);
@@ -40,7 +40,7 @@ const TaskList = ({ onTaskComplete, isMinimalMode = false, filterPriority = 'all
     }
   };
 
-  const handleToggleTask = async (taskId) => {
+const handleToggleTask = async (taskId) => {
     try {
       const task = tasks.find(t => t.Id === taskId);
       if (!task) return;
@@ -63,7 +63,7 @@ const TaskList = ({ onTaskComplete, isMinimalMode = false, filterPriority = 'all
     }
   };
 
-  const handleEditTask = async (taskId, updates) => {
+const handleEditTask = async (taskId, updates) => {
     try {
       const updatedTask = await TaskService.update(taskId, updates);
       setTasks(prev => prev.map(t => t.Id === taskId ? updatedTask : t));

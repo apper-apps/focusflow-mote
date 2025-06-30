@@ -24,7 +24,7 @@ const TasksPage = () => {
     loadUserStats();
   }, []);
 
-  const loadUserStats = async () => {
+const loadUserStats = async () => {
     try {
       const stats = await UserService.getStats();
       setUserStats(stats);
@@ -59,10 +59,10 @@ const TasksPage = () => {
     }));
 
     // Save updated stats
-    try {
+try {
       await UserService.updateStats({
-        todayPoints: newTodayPoints,
-        totalPoints: newTotalPoints,
+        today_points: newTodayPoints,
+        total_points: newTotalPoints,
         level: newLevel,
         streak: newStreak
       });

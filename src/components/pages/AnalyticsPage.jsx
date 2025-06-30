@@ -17,7 +17,7 @@ const AnalyticsPage = () => {
     loadAnalytics();
   }, [timeRange]);
 
-  const loadAnalytics = async () => {
+const loadAnalytics = async () => {
     try {
       setLoading(true);
       setError('');
