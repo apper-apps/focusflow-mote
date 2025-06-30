@@ -36,11 +36,27 @@ async ensureClient() {
 
 async getAll() {
     try {
+      // Pre-flight checks for better diagnostics
+      if (!window.ApperSDK) {
+        console.error('ApperSDK not loaded - script tag may be missing or failed to load');
+        const { toast } = await import('react-toastify');
+        toast.error('Application not properly initialized. Please refresh the page.');
+        return [];
+      }
+
       const client = await this.ensureClient();
       if (!client) {
-        console.error('ApperClient not initialized - SDK may not be loaded yet');
+        console.error('ApperClient initialization failed - check environment variables and SDK status');
         const { toast } = await import('react-toastify');
-        toast.error('Database connection not available. Please refresh the page.');
+        toast.error('Database connection not available. Please check your connection and refresh.');
+        return [];
+      }
+
+      // Validate environment variables are available
+      if (!import.meta.env.VITE_APPER_PROJECT_ID || !import.meta.env.VITE_APPER_PUBLIC_KEY) {
+        console.error('Missing required environment variables: VITE_APPER_PROJECT_ID or VITE_APPER_PUBLIC_KEY');
+        const { toast } = await import('react-toastify');
+        toast.error('Application configuration error. Please contact support.');
         return [];
       }
 
@@ -70,33 +86,75 @@ async getAll() {
         }
       };
 
-      const response = await client.fetchRecords('task', params);
+      console.log('Attempting to fetch tasks from table "task" with params:', JSON.stringify(params, null, 2));
       
-      // Validate response exists before checking success
+      // Add timeout wrapper for the API call
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
+      );
+      
+      const fetchPromise = client.fetchRecords('task', params);
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      // Enhanced response validation with detailed logging
       if (!response) {
-        console.error('No response received from server - network or API issue');
+        console.error('No response received from server - possible causes:');
+        console.error('1. Network connectivity issues');
+        console.error('2. Apper backend server unavailable');
+        console.error('3. Invalid API endpoint or table name');
+        console.error('4. Authentication/authorization failure');
         const { toast } = await import('react-toastify');
-        toast.error('Failed to connect to server. Please check your connection.');
+        toast.error('Failed to connect to server. Please check your internet connection.');
         return [];
       }
       
       if (!response.success) {
-        console.error('API request failed:', response.message || 'Unknown error occurred');
+        console.error('API request failed with response:', response);
+        console.error('Error details:', {
+          message: response.message,
+          table: 'task',
+          hasData: !!response.data,
+          responseKeys: Object.keys(response || {})
+        });
         const { toast } = await import('react-toastify');
-        toast.error(response.message || 'Failed to load tasks');
+        toast.error(response.message || 'Failed to load tasks from database');
         return [];
       }
 
+      console.log(`Successfully fetched ${response.data?.length || 0} tasks from database`);
+
       // Handle empty or non-existent data
       if (!response.data || response.data.length === 0) {
+        console.log('No tasks found in database - returning empty array');
         return [];
       }
 
       return response.data;
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      // Enhanced error logging with more context
+      console.error('Error fetching tasks - full error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        clientInitialized: !!this.client,
+        sdkAvailable: !!window.ApperSDK,
+        envVarsPresent: {
+          projectId: !!import.meta.env.VITE_APPER_PROJECT_ID,
+          publicKey: !!import.meta.env.VITE_APPER_PUBLIC_KEY
+        }
+      });
+      
       const { toast } = await import('react-toastify');
-      toast.error('Failed to load tasks. Please try again.');
+      
+      // Provide more specific error messages based on error type
+      if (error.message.includes('timeout')) {
+        toast.error('Request timed out. Please check your connection and try again.');
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        toast.error('Network error. Please check your internet connection.');
+      } else {
+        toast.error('Failed to load tasks. Please try again.');
+      }
+      
       return [];
     }
   }
