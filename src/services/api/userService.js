@@ -1,54 +1,54 @@
 import { toast } from "react-toastify";
+import React from "react";
+import Error from "@/components/ui/Error";
 
 class UserService {
-constructor() {
+  constructor() {
     this.apperClient = null;
-    // Don't initialize immediately - use lazy initialization
+    this.isInitializing = false;
+    this.initializeClient();
   }
 
   initializeClient() {
-    // Check if SDK is available
-    if (!window.ApperSDK) {
-      return false;
-    }
+    if (this.isInitializing) return;
+    this.isInitializing = true;
 
     try {
-      const { ApperClient } = window.ApperSDK;
-      this.apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
-      return true;
+      if (typeof window !== 'undefined' && window.ApperSDK) {
+        const { ApperClient } = window.ApperSDK;
+        this.apperClient = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+        });
+        this.isInitializing = false;
+      } else {
+        // SDK not loaded yet, try again in a moment
+        setTimeout(() => {
+          this.isInitializing = false;
+          this.initializeClient();
+        }, 100);
+      }
     } catch (error) {
-      console.error('Failed to initialize ApperClient:', error);
-      return false;
+      console.error('Error initializing ApperClient:', error);
+      this.isInitializing = false;
     }
   }
 
   async waitForSDK(maxWaitTime = 10000) {
-    const pollInterval = 100;
-    const maxAttempts = maxWaitTime / pollInterval;
-    let attempts = 0;
-
-    return new Promise((resolve, reject) => {
-      const checkSDK = () => {
-        attempts++;
-        
-        if (this.initializeClient()) {
-          resolve(true);
-          return;
-        }
-
-        if (attempts >= maxAttempts) {
-          reject(new Error('Apper SDK failed to load within the expected time. Please refresh the page.'));
-          return;
-        }
-
-        setTimeout(checkSDK, pollInterval);
-      };
-
-      checkSDK();
-    });
+    const startTime = Date.now();
+    
+    while (!this.apperClient && (Date.now() - startTime) < maxWaitTime) {
+      if (!this.isInitializing) {
+        this.initializeClient();
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    if (!this.apperClient) {
+      throw new Error('ApperClient failed to initialize within the timeout period');
+    }
+    
+    return this.apperClient;
   }
 
 async getStats() {
@@ -60,6 +60,7 @@ async getStats() {
 
       const params = {
         fields: [
+          { field: { Name: "Id" } },
           { field: { Name: "streak" } },
           { field: { Name: "level" } },
           { field: { Name: "total_points" } },
@@ -80,43 +81,27 @@ async getStats() {
 
       const response = await this.apperClient.fetchRecords('user_stats', params);
 
+      // Handle undefined response structure
+      if (!response || response._type === 'undefined' || response.value === 'undefined') {
+        console.error('Failed to fetch user stats: Received undefined response from API');
+        toast.error('Unable to connect to user stats service');
+        return this.getDefaultStats();
+      }
+
       if (!response.success) {
         console.error('Failed to fetch user stats:', response.message);
-        toast.error(response.message);
-        return {
-          streak: 0,
-          level: 1,
-          total_points: 0,
-          today_points: 0,
-          longest_streak: 0,
-          tasks_completed_today: 0,
-          tasks_completed_this_week: 0,
-          total_tasks_completed: 0,
-          average_focus_time: 0,
-          total_focus_time: 0,
-          pomodoros_completed: 0
-        };
+        toast.error(response.message || 'Failed to load user stats');
+        return this.getDefaultStats();
       }
 
       if (!response.data || response.data.length === 0) {
         // Return default stats if no data exists
-        return {
-          streak: 0,
-          level: 1,
-          total_points: 0,
-          today_points: 0,
-          longest_streak: 0,
-          tasks_completed_today: 0,
-          tasks_completed_this_week: 0,
-          total_tasks_completed: 0,
-          average_focus_time: 0,
-          total_focus_time: 0,
-          pomodoros_completed: 0
-        };
+        return this.getDefaultStats();
       }
 
       const stats = response.data[0];
       return {
+        Id: stats.Id,
         streak: stats.streak || 0,
         level: stats.level || 1,
         total_points: stats.total_points || 0,
@@ -132,20 +117,25 @@ async getStats() {
     } catch (error) {
       console.error('Error fetching user stats:', error);
       toast.error('Failed to load user stats');
-      return {
-        streak: 0,
-        level: 1,
-        total_points: 0,
-        today_points: 0,
-        longest_streak: 0,
-        tasks_completed_today: 0,
-        tasks_completed_this_week: 0,
-        total_tasks_completed: 0,
-        average_focus_time: 0,
-        total_focus_time: 0,
-        pomodoros_completed: 0
-      };
+      return this.getDefaultStats();
     }
+  }
+
+  getDefaultStats() {
+    return {
+      Id: null,
+      streak: 0,
+      level: 1,
+      total_points: 0,
+      today_points: 0,
+      longest_streak: 0,
+      tasks_completed_today: 0,
+      tasks_completed_this_week: 0,
+      total_tasks_completed: 0,
+      average_focus_time: 0,
+      total_focus_time: 0,
+      pomodoros_completed: 0
+    };
   }
 
 
@@ -159,8 +149,13 @@ async updateStats(updates) {
       // Get current stats first to find the record ID
       const currentStats = await this.getStats();
       
+      // If no existing record and no ID, create a new record
+      if (!currentStats.Id) {
+        return await this.createStats(updates);
+      }
+      
       const updateData = {
-        Id: currentStats.Id || 1
+        Id: currentStats.Id
       };
 
       // Only include updateable fields using exact database field names
@@ -183,23 +178,31 @@ async updateStats(updates) {
 
       const response = await this.apperClient.updateRecord('user_stats', params);
       
+      // Handle undefined response structure
+      if (!response || response._type === 'undefined' || response.value === 'undefined') {
+        console.error('Failed to update user stats: Received undefined response from API');
+        toast.error('Unable to connect to user stats service');
+        throw new Error('API returned undefined response');
+      }
+      
       if (!response.success) {
         console.error(response.message);
-        throw new Error(response.message);
+        toast.error(response.message || 'Failed to update stats');
+        throw new Error(response.message || 'Update failed');
       }
 
       if (response.results) {
         const successfulUpdates = response.results.filter(result => result.success);
-const failedUpdates = response.results.filter(result => !result.success);
+        const failedUpdates = response.results.filter(result => !result.success);
         
         if (failedUpdates.length > 0) {
-          console.error(`Failed to update ${failedUpdates.length} records: ${JSON.stringify(failedUpdates)}`);
+          console.error(`Failed to update ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
           
           failedUpdates.forEach(record => {
             record.errors?.forEach(error => {
-              console.error(`${error.fieldLabel}: ${error.message}`);
+              toast.error(`${error.fieldLabel}: ${error.message}`);
             });
-            if (record.message) console.error(record.message);
+            if (record.message) toast.error(record.message);
           });
         }
         
@@ -212,6 +215,68 @@ const failedUpdates = response.results.filter(result => !result.success);
     } catch (error) {
       console.error('Error updating user stats:', error);
       toast.error('Failed to update stats');
+      throw error;
+    }
+  }
+
+  async createStats(initialData = {}) {
+    try {
+      // Ensure client is initialized
+      if (!this.apperClient) {
+        await this.waitForSDK();
+      }
+
+      const createData = {
+        Name: initialData.Name || 'Default User Stats',
+        streak: initialData.streak || 0,
+        level: initialData.level || 1,
+        total_points: initialData.total_points || 0,
+        today_points: initialData.today_points || 0,
+        longest_streak: initialData.longest_streak || 0,
+        tasks_completed_today: initialData.tasks_completed_today || 0,
+        tasks_completed_this_week: initialData.tasks_completed_this_week || 0,
+        total_tasks_completed: initialData.total_tasks_completed || 0,
+        average_focus_time: initialData.average_focus_time || 0,
+        total_focus_time: initialData.total_focus_time || 0,
+        pomodoros_completed: initialData.pomodoros_completed || 0
+      };
+
+      const params = {
+        records: [createData]
+      };
+
+      const response = await this.apperClient.createRecord('user_stats', params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message || 'Failed to create stats');
+        throw new Error(response.message || 'Create failed');
+      }
+
+      if (response.results) {
+        const successfulCreates = response.results.filter(result => result.success);
+        const failedCreates = response.results.filter(result => !result.success);
+        
+        if (failedCreates.length > 0) {
+          console.error(`Failed to create ${failedCreates.length} records:${JSON.stringify(failedCreates)}`);
+          
+          failedCreates.forEach(record => {
+            record.errors?.forEach(error => {
+              toast.error(`${error.fieldLabel}: ${error.message}`);
+            });
+            if (record.message) toast.error(record.message);
+          });
+        }
+        
+        if (successfulCreates.length > 0) {
+          return successfulCreates[0].data;
+        }
+      }
+
+      throw new Error('Failed to create stats');
+    } catch (error) {
+      console.error('Error creating user stats:', error);
+      toast.error('Failed to create stats');
       throw error;
     }
   }
