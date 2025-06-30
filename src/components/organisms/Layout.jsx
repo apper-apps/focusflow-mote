@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Sidebar from '@/components/organisms/Sidebar';
-import ApperIcon from '@/components/ApperIcon';
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { motion } from "framer-motion";
+import ApperIcon from "@/components/ApperIcon";
+import Sidebar from "@/components/organisms/Sidebar";
 
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -55,8 +55,7 @@ const Layout = () => {
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }
               `}
-              title={isMinimalMode ? "Exit Focus Mode" : "Enter Focus Mode"}
-            >
+>
               <ApperIcon 
                 name={isMinimalMode ? "Eye" : "EyeOff"} 
                 className="w-4 h-4" 
@@ -66,12 +65,12 @@ const Layout = () => {
 
             {/* Current Time */}
             <div className="text-sm text-gray-500 font-mono">
-              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
         </header>
 
-        {/* Main Content Area */}
+        {/* Main Content Area */
         <main className="flex-1 overflow-auto">
           <div className={`
             max-w-7xl mx-auto p-6

@@ -10,7 +10,8 @@ import MotivationalToast from '@/components/molecules/MotivationalToast';
 import userService from '@/services/api/userService';
 
 const TasksPage = () => {
-  const { isMinimalMode } = useOutletContext();
+const outletContext = useOutletContext();
+  const isMinimalMode = outletContext?.isMinimalMode || false;
 const [userStats, setUserStats] = useState({
     streak: 0,
     level: 1,

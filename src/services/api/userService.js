@@ -1,6 +1,4 @@
 import { toast } from "react-toastify";
-import React from "react";
-import Error from "@/components/ui/Error";
 
 class UserService {
   constructor() {
@@ -79,10 +77,10 @@ async getStats() {
         }
       };
 
-      const response = await this.apperClient.fetchRecords('user_stats', params);
+const response = await this.apperClient.fetchRecords('user_stats', params);
 
       // Handle undefined response structure
-      if (!response || response._type === 'undefined' || response.value === 'undefined') {
+      if (!response || typeof response === 'undefined' || response === null) {
         console.error('Failed to fetch user stats: Received undefined response from API');
         toast.error('Unable to connect to user stats service');
         return this.getDefaultStats();
@@ -176,10 +174,10 @@ async updateStats(updates) {
         records: [updateData]
       };
 
-      const response = await this.apperClient.updateRecord('user_stats', params);
+const response = await this.apperClient.updateRecord('user_stats', params);
       
-      // Handle undefined response structure
-      if (!response || response._type === 'undefined' || response.value === 'undefined') {
+      // Handle undefined response structure  
+      if (!response || typeof response === 'undefined' || response === null) {
         console.error('Failed to update user stats: Received undefined response from API');
         toast.error('Unable to connect to user stats service');
         throw new Error('API returned undefined response');

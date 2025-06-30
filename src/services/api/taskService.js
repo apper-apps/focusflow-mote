@@ -1,28 +1,4 @@
 import { toast } from "react-toastify";
-
-// Global ApperClient instance
-let client = null;
-
-// Initialize ApperClient with proper configuration
-async function initializeClient() {
-  if (!client) {
-    const { ApperClient } = window.ApperSDK;
-    client = new ApperClient({
-      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-    });
-  }
-  return client;
-}
-
-// Ensure client is initialized before use
-async function ensureClient() {
-  if (!client) {
-    await initializeClient();
-  }
-  return client;
-}
-
 class TaskService {
   constructor() {
     this.apperClient = null;
@@ -106,9 +82,9 @@ async getAll() {
         }
       };
 
-      console.log('Attempting to fetch tasks from table "task" with params:', JSON.stringify(params, null, 2));
+      console.log('Fetching tasks from database...');
       
-// Add timeout wrapper for the API call
+      // Add timeout wrapper for the API call
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
       );
@@ -117,33 +93,25 @@ async getAll() {
       const response = await Promise.race([fetchPromise, timeoutPromise]);
       
       if (!response.success) {
-        console.error('API request failed with response:', response);
-        console.error('Error details:', {
-          message: response.message,
-          table: 'task',
-          hasData: !!response.data,
-          responseKeys: Object.keys(response || {})
-        });
+        console.error('API request failed:', response.message);
         toast.error(response.message || 'Failed to load tasks from database');
         return [];
       }
 
-      console.log(`Successfully fetched ${response.data?.length || 0} tasks from database`);
+      console.log(`Successfully fetched ${response.data?.length || 0} tasks`);
 
       // Handle empty or non-existent data
       if (!response.data || response.data.length === 0) {
-        console.log('No tasks found in database - returning empty array');
+        console.log('No tasks found in database');
         return [];
       }
 
       return response.data;
     } catch (error) {
       // Enhanced error logging with more context
-      console.error('Error fetching tasks - full error details:', {
+      console.error('Error fetching tasks:', {
         message: error.message,
-        stack: error.stack,
         name: error.name,
-        clientInitialized: !!client,
         sdkAvailable: !!window.ApperSDK,
         envVarsPresent: {
           projectId: !!import.meta.env.VITE_APPER_PROJECT_ID,
@@ -224,15 +192,13 @@ async create(taskData) {
         records: [filteredData]
       };
 
-      const response = await client.createRecord('task', params);
+const response = await client.createRecord('task', params);
       
       if (!response.success) {
-console.error(response.message);
-        const { toast } = await import('react-toastify');
+        console.error(response.message);
         toast.error(response.message);
         throw new Error(response.message);
       }
-
       if (response.results) {
         const successfulRecords = response.results.filter(result => result.success);
         const failedRecords = response.results.filter(result => !result.success);
@@ -254,10 +220,10 @@ console.error(response.message);
         }
       }
 
-      throw new Error('Failed to create task');
+throw new Error('Failed to create task');
     } catch (error) {
       console.error('Error creating task:', error);
-toast.error('Failed to create task');
+      toast.error('Failed to create task');
       throw error;
     }
   }
@@ -316,11 +282,10 @@ if (successfulUpdates.length > 0) {
       }
 
       throw new Error('Failed to update task');
+throw new Error('Failed to update task');
     } catch (error) {
       console.error(`Error updating task with ID ${id}:`, error);
-      const { toast } = await import('react-toastify');
       toast.error('Failed to update task');
-      throw error;
     }
   }
 
@@ -336,8 +301,8 @@ if (successfulUpdates.length > 0) {
       const response = await client.deleteRecord('task', params);
       
       if (!response.success) {
-        console.error(response.message);
-toast.error(response.message);
+console.error(response.message);
+        toast.error(response.message);
         throw new Error(response.message);
       }
 
@@ -401,8 +366,8 @@ toast.error(response.message);
 
       const response = await client.fetchRecords('task', params);
       
-      if (!response.success) {
-console.error(response.message);
+if (!response.success) {
+        console.error(response.message);
         toast.error(response.message);
         return [];
       }
@@ -450,9 +415,8 @@ async getCompleted() {
       }
 
       return response.data || [];
-    } catch (error) {
+} catch (error) {
       console.error('Error fetching completed tasks:', error);
-      const { toast } = await import('react-toastify');
       toast.error('Failed to load completed tasks');
       return [];
     }
@@ -537,9 +501,8 @@ async getTodayTasks() {
       }
 
       return response.data || [];
-    } catch (error) {
+} catch (error) {
       console.error('Error fetching today\'s tasks:', error);
-      const { toast } = await import('react-toastify');
       toast.error('Failed to load today\'s tasks');
       return [];
     }
@@ -580,10 +543,9 @@ async reorderTasks(taskIds) {
         return true;
       }
 
-      return false;
+return false;
     } catch (error) {
       console.error('Error reordering tasks:', error);
-      const { toast } = await import('react-toastify');
       toast.error('Failed to reorder tasks');
       return false;
     }
