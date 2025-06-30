@@ -16,10 +16,14 @@ class UserService {
     }
   }
 
-  async getStats() {
+async getStats() {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient is not available. Please ensure the Apper SDK is loaded.');
+        }
+      }
       const params = {
         fields: [
           { field: { Name: "Name" } },
@@ -90,10 +94,14 @@ class UserService {
     }
   }
 
-  async updateStats(updates) {
+async updateStats(updates) {
     try {
-      if (!this.apperClient) this.initializeClient();
-      
+      if (!this.apperClient) {
+        this.initializeClient();
+        if (!this.apperClient) {
+          throw new Error('ApperClient is not available. Please ensure the Apper SDK is loaded.');
+        }
+      }
       // Get current stats first to find the record ID
       const currentStats = await this.getStats();
       
