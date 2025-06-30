@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import TaskItem from '@/components/molecules/TaskItem';
-import QuickAddTask from '@/components/molecules/QuickAddTask';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import Empty from '@/components/ui/Empty';
-import TaskService from '@/services/api/taskService';
-import MotivationalToast from '@/components/molecules/MotivationalToast';
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import MotivationalToast from "@/components/molecules/MotivationalToast";
+import TaskItem from "@/components/molecules/TaskItem";
+import QuickAddTask from "@/components/molecules/QuickAddTask";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Loading from "@/components/ui/Loading";
+import TaskService from "@/services/api/taskService";
 
 const TaskList = ({ onTaskComplete, isMinimalMode = false, filterPriority = 'all' }) => {
   const [tasks, setTasks] = useState([]);
