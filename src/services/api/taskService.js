@@ -1,4 +1,6 @@
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import React from "react";
+import Error from "@/components/ui/Error";
 
 class TaskService {
   constructor() {
@@ -92,7 +94,7 @@ async getAll() {
     }
   }
 
-  async getById(id) {
+async getById(id) {
     try {
       const client = await this.ensureClient();
       if (!client) throw new Error('ApperClient not initialized');
@@ -117,6 +119,7 @@ async getAll() {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return null;
       }
@@ -124,6 +127,7 @@ async getAll() {
       return response.data;
     } catch (error) {
       console.error(`Error fetching task with ID ${id}:`, error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to load task');
       return null;
     }
@@ -376,8 +380,9 @@ async getAll() {
       }
 
       return response.data || [];
-    } catch (error) {
+} catch (error) {
       console.error('Error fetching completed tasks:', error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to load completed tasks');
       return [];
     }
@@ -425,7 +430,7 @@ async getAll() {
     }
   }
 
-  async getTodayTasks() {
+async getTodayTasks() {
     try {
       const client = await this.ensureClient();
       if (!client) throw new Error('ApperClient not initialized');
@@ -457,6 +462,7 @@ async getAll() {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return [];
       }
@@ -464,12 +470,13 @@ async getAll() {
       return response.data || [];
     } catch (error) {
       console.error('Error fetching today\'s tasks:', error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to load today\'s tasks');
       return [];
     }
   }
 
-  async reorderTasks(taskIds) {
+async reorderTasks(taskIds) {
     try {
       const client = await this.ensureClient();
       if (!client) throw new Error('ApperClient not initialized');
@@ -487,6 +494,7 @@ async getAll() {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return false;
       }
@@ -496,10 +504,12 @@ async getAll() {
         
         if (failedUpdates.length > 0) {
           console.error(`Failed to reorder ${failedUpdates.length} tasks:${JSON.stringify(failedUpdates)}`);
+          const { toast } = await import('react-toastify');
           toast.error('Some tasks could not be reordered');
           return false;
         }
         
+        const { toast } = await import('react-toastify');
         toast.success('Tasks reordered successfully');
         return true;
       }
@@ -507,9 +517,10 @@ async getAll() {
       return false;
     } catch (error) {
       console.error('Error reordering tasks:', error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to reorder tasks');
       return false;
-    }
+}
   }
 }
 
