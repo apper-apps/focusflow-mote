@@ -8,20 +8,20 @@ import MotivationalToast from '@/components/molecules/MotivationalToast';
 import SettingsService from '@/services/api/settingsService';
 
 const SettingsPage = () => {
-  const [settings, setSettings] = useState({
-    pomodoroDuration: 25,
-    shortBreakDuration: 5,
-    longBreakDuration: 15,
-    autoStartBreaks: true,
-    autoStartPomodoros: false,
+const [settings, setSettings] = useState({
+    pomodoro_duration: 25,
+    short_break_duration: 5,
+    long_break_duration: 15,
+    auto_start_breaks: true,
+    auto_start_pomodoros: false,
     notifications: true,
-    soundEnabled: true,
-    dailyGoal: 8,
-    workStartTime: '09:00',
-    workEndTime: '17:00',
-    motivationalMessages: true,
-    streakReminders: true,
-    weekendMode: false,
+    sound_enabled: true,
+    daily_goal: 8,
+    work_start_time: '09:00',
+    work_end_time: '17:00',
+    motivational_messages: true,
+    streak_reminders: true,
+    weekend_mode: false,
     theme: 'light'
   });
   
@@ -32,7 +32,7 @@ const SettingsPage = () => {
     loadSettings();
   }, []);
 
-  const loadSettings = async () => {
+const loadSettings = async () => {
     try {
       const data = await SettingsService.getSettings();
       setSettings(data);
@@ -81,8 +81,8 @@ const SettingsPage = () => {
       title: 'Pomodoro Timer',
       icon: 'Timer',
       settings: [
-        {
-          key: 'pomodoroDuration',
+{
+          key: 'pomodoro_duration',
           label: 'Focus Duration (minutes)',
           type: 'number',
           min: 5,
@@ -90,7 +90,7 @@ const SettingsPage = () => {
           description: 'How long each focus session lasts'
         },
         {
-          key: 'shortBreakDuration',
+          key: 'short_break_duration',
           label: 'Short Break (minutes)',
           type: 'number',
           min: 1,
@@ -98,7 +98,7 @@ const SettingsPage = () => {
           description: 'Short break between focus sessions'
         },
         {
-          key: 'longBreakDuration',
+          key: 'long_break_duration',
           label: 'Long Break (minutes)',
           type: 'number',
           min: 5,
@@ -106,13 +106,13 @@ const SettingsPage = () => {
           description: 'Long break after 4 focus sessions'
         },
         {
-          key: 'autoStartBreaks',
+          key: 'auto_start_breaks',
           label: 'Auto-start breaks',
           type: 'toggle',
           description: 'Automatically start break timers'
         },
         {
-          key: 'autoStartPomodoros',
+          key: 'auto_start_pomodoros',
           label: 'Auto-start pomodoros',
           type: 'toggle',
           description: 'Automatically start next focus session after break'
@@ -123,26 +123,26 @@ const SettingsPage = () => {
       title: 'Notifications & Sound',
       icon: 'Bell',
       settings: [
-        {
+{
           key: 'notifications',
           label: 'Enable notifications',
           type: 'toggle',
           description: 'Show notifications for timers and achievements'
         },
         {
-          key: 'soundEnabled',
+          key: 'sound_enabled',
           label: 'Sound effects',
           type: 'toggle',
           description: 'Play sounds for timer alerts'
         },
         {
-          key: 'motivationalMessages',
+          key: 'motivational_messages',
           label: 'Motivational messages',
           type: 'toggle',
           description: 'Show encouraging messages after completing tasks'
         },
         {
-          key: 'streakReminders',
+          key: 'streak_reminders',
           label: 'Streak reminders',
           type: 'toggle',
           description: 'Remind you to maintain your daily streak'
@@ -153,8 +153,8 @@ const SettingsPage = () => {
       title: 'Goals & Schedule',
       icon: 'Target',
       settings: [
-        {
-          key: 'dailyGoal',
+{
+          key: 'daily_goal',
           label: 'Daily task goal',
           type: 'number',
           min: 1,
@@ -162,19 +162,19 @@ const SettingsPage = () => {
           description: 'Number of tasks you aim to complete daily'
         },
         {
-          key: 'workStartTime',
+          key: 'work_start_time',
           label: 'Work start time',
           type: 'time',
           description: 'When your productive hours begin'
         },
         {
-          key: 'workEndTime',
+          key: 'work_end_time',
           label: 'Work end time',
           type: 'time',
           description: 'When your productive hours end'
         },
         {
-          key: 'weekendMode',
+          key: 'weekend_mode',
           label: 'Relaxed weekend mode',
           type: 'toggle',
           description: 'Reduce goals and reminders on weekends'
