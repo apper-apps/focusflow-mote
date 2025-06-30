@@ -80,7 +80,7 @@ async getStats() {
         }
       };
 
-      const response = await this.apperClient.fetchRecords('user_stats', params);
+const response = await this.apperClient.fetchRecords('user_stats', params);
       
       if (!response.success) {
         console.error('Failed to fetch user stats:', response.message);
@@ -130,9 +130,8 @@ async getStats() {
         total_focus_time: stats.total_focus_time || 0,
         pomodoros_completed: stats.pomodoros_completed || 0
       };
-    } catch (error) {
+} catch (error) {
       console.error('Error fetching user stats:', error);
-      const { toast } = await import('react-toastify');
       toast.error('Failed to load user stats');
       return {
         streak: 0,
@@ -150,80 +149,14 @@ async getStats() {
     }
   }
 
-  async updateStats(updates) {
+
+async updateStats(updates) {
     try {
       // Ensure client is initialized
       if (!this.apperClient) {
         await this.waitForSDK();
       }
-
-      // Filter to only include Updateable fields from user_stats table
-      const updateableFields = ['streak', 'level', 'total_points', 'today_points', 'longest_streak', 
-                               'tasks_completed_today', 'tasks_completed_this_week', 'total_tasks_completed',
-                               'average_focus_time', 'total_focus_time', 'pomodoros_completed'];
       
-      const filteredUpdates = {};
-      Object.keys(updates).forEach(key => {
-        if (updateableFields.includes(key)) {
-          filteredUpdates[key] = updates[key];
-        }
-      });
-
-      // Get current user stats to update the existing record
-      const currentStats = await this.getStats();
-      if (!currentStats) {
-        throw new Error('Unable to fetch current user stats for update');
-      }
-
-      // Assume we have a record to update (in production, you'd fetch the actual record ID)
-      const params = {
-        records: [{
-          Id: 1, // This should be the actual user stats record ID
-          ...filteredUpdates
-        }]
-      };
-
-      const response = await this.apperClient.updateRecord('user_stats', params);
-      
-      if (!response.success) {
-        console.error('Failed to update user stats:', response.message);
-        const { toast } = await import('react-toastify');
-        toast.error(response.message);
-        return false;
-      }
-
-      if (response.results) {
-        const failedUpdates = response.results.filter(result => !result.success);
-        
-        if (failedUpdates.length > 0) {
-          console.error(`Failed to update ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
-          
-          const { toast } = await import('react-toastify');
-          failedUpdates.forEach(record => {
-            record.errors?.forEach(error => {
-              toast.error(`${error.fieldLabel}: ${error.message}`);
-            });
-            if (record.message) toast.error(record.message);
-          });
-          return false;
-        }
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error updating user stats:', error);
-      const { toast } = await import('react-toastify');
-      toast.error('Failed to update user stats');
-      return false;
-    }
-  }
-
-  async updateStats(updates) {
-    try {
-      // Ensure client is initialized
-      if (!this.apperClient) {
-        await this.waitForSDK();
-      }
       // Get current stats first to find the record ID
       const currentStats = await this.getStats();
       
@@ -231,7 +164,7 @@ async getStats() {
         Id: currentStats.Id || 1
       };
 
-      // Only include updateable fields
+      // Only include updateable fields using exact database field names
       if (updates.Name !== undefined) updateData.Name = updates.Name;
       if (updates.streak !== undefined) updateData.streak = updates.streak;
       if (updates.level !== undefined) updateData.level = updates.level;
@@ -258,7 +191,7 @@ async getStats() {
 
       if (response.results) {
         const successfulUpdates = response.results.filter(result => result.success);
-        const failedUpdates = response.results.filter(result => !result.success);
+const failedUpdates = response.results.filter(result => !result.success);
         
         if (failedUpdates.length > 0) {
           console.error(`Failed to update ${failedUpdates.length} records: ${JSON.stringify(failedUpdates)}`);

@@ -74,15 +74,15 @@ const loadUserStats = async () => {
   const handlePomodoroComplete = () => {
     MotivationalToast.pomodoroCompleted();
     
-    // Award bonus points for completed pomodoro
+// Award bonus points for completed pomodoro
     const bonusPoints = 15;
-    const newTodayPoints = userStats.todayPoints + bonusPoints;
-    const newTotalPoints = userStats.totalPoints + bonusPoints;
+    const newTodayPoints = userStats.today_points + bonusPoints;
+    const newTotalPoints = userStats.total_points + bonusPoints;
     
     setUserStats(prev => ({
       ...prev,
-      todayPoints: newTodayPoints,
-      totalPoints: newTotalPoints
+      today_points: newTodayPoints,
+      total_points: newTotalPoints
     }));
   };
 
@@ -181,9 +181,9 @@ const loadUserStats = async () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatsCard
+<StatsCard
           title="Today's Points"
-          value={userStats.todayPoints}
+          value={userStats.today_points}
           icon="Star"
           color="primary"
           gradient={true}
@@ -204,7 +204,7 @@ const loadUserStats = async () => {
         />
         <StatsCard
           title="Total Points"
-          value={userStats.totalPoints}
+          value={userStats.total_points}
           icon="Award"
           color="success"
           gradient={true}
