@@ -90,68 +90,6 @@ return this.getDefaultSettings();
     }
   }
 
-async getSettings() {
-    try {
-      // Initialize ApperClient
-      const { ApperClient } = window.ApperSDK;
-      const apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
-
-      // Fetch settings from database
-      const params = {
-        fields: [
-          { field: { Name: "Name" } },
-          { field: { Name: "pomodoro_duration" } },
-          { field: { Name: "short_break_duration" } },
-          { field: { Name: "long_break_duration" } },
-          { field: { Name: "auto_start_breaks" } },
-          { field: { Name: "auto_start_pomodoros" } },
-          { field: { Name: "notifications" } },
-          { field: { Name: "sound_enabled" } },
-          { field: { Name: "daily_goal" } },
-          { field: { Name: "work_start_time" } },
-          { field: { Name: "work_end_time" } },
-          { field: { Name: "motivational_messages" } },
-          { field: { Name: "streak_reminders" } },
-          { field: { Name: "weekend_mode" } },
-          { field: { Name: "theme" } },
-          { field: { Name: "language" } },
-          { field: { Name: "timezone" } },
-          { field: { Name: "email_notifications" } },
-          { field: { Name: "weekly_reports" } },
-          { field: { Name: "data_retention" } },
-          { field: { Name: "privacy_mode" } }
-        ]
-      };
-
-      const response = await apperClient.fetchRecords("settings", params);
-
-      if (!response.success) {
-        console.error("Failed to fetch settings:", response.message);
-        return this.getDefaultSettings();
-      }
-
-      // If settings exist, return the first record
-      if (response.data && response.data.length > 0) {
-        return response.data[0];
-      }
-
-      // If no settings found, create default settings
-      const defaultSettings = this.getDefaultSettings();
-      const createResponse = await this.createDefaultSettings(apperClient, defaultSettings);
-      
-      if (createResponse && createResponse.success) {
-        return createResponse.data || defaultSettings;
-      }
-
-      return defaultSettings;
-    } catch (error) {
-      console.error("Error fetching settings:", error);
-      return this.getDefaultSettings();
-    }
-  }
 
   async createDefaultSettings(apperClient, defaultSettings) {
     try {
