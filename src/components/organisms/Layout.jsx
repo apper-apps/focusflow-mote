@@ -42,7 +42,7 @@ const Layout = () => {
             )}
           </div>
 
-          <div className="flex items-center space-x-3">
+<div className="flex items-center space-x-3">
             {/* Minimal Mode Toggle */}
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -55,17 +55,16 @@ const Layout = () => {
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }
               `}
->
+            >
               <ApperIcon 
                 name={isMinimalMode ? "Eye" : "EyeOff"} 
                 className="w-4 h-4" 
               />
               {!isMinimalMode && <span className="text-sm font-medium">Focus Mode</span>}
             </motion.button>
-
             {/* Current Time */}
             <div className="text-sm text-gray-500 font-mono">
-{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
         </header>
