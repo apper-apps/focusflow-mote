@@ -23,7 +23,7 @@ async initializeClient() {
       try {
         // Wait for ApperSDK to be available with retries
         let retryCount = 0;
-        const maxRetries = 10;
+        const maxRetries = 20; // Increased retry limit for slower loading
         
         while (retryCount < maxRetries) {
           if (window.ApperSDK) {
@@ -37,16 +37,16 @@ async initializeClient() {
             return;
           }
           
-          // Wait before retrying with exponential backoff
-          const delay = Math.min(1000, Math.pow(2, retryCount) * 100);
+          // Wait before retrying with enhanced exponential backoff
+          const delay = Math.min(5000, Math.pow(2, retryCount) * 200);
           await new Promise(resolve => setTimeout(resolve, delay));
           retryCount++;
         }
         
         // Max retries exceeded
         this.initializationPromise = null;
-        const error = new Error('ApperSDK not available after maximum retries');
-        console.error(error.message);
+        const error = new Error(`ApperSDK not available after ${maxRetries} retries. Please ensure the SDK script is properly loaded.`);
+        console.error('SDK Initialization Error:', error.message, 'Retries attempted:', retryCount);
         reject(error);
       } catch (error) {
         this.initializationPromise = null;
