@@ -9,19 +9,19 @@ import SettingsService from '@/services/api/settingsService';
 
 const SettingsPage = () => {
 const [settings, setSettings] = useState({
-    pomodoro_duration: 25,
-    short_break_duration: 5,
-    long_break_duration: 15,
-    auto_start_breaks: true,
-    auto_start_pomodoros: false,
+    pomodoroDuration: 25,
+    shortBreakDuration: 5,
+    longBreakDuration: 15,
+    autoStartBreaks: true,
+    autoStartPomodoros: false,
     notifications: true,
-    sound_enabled: true,
-    daily_goal: 8,
-    work_start_time: '09:00',
-    work_end_time: '17:00',
-    motivational_messages: true,
-    streak_reminders: true,
-    weekend_mode: false,
+    soundEnabled: true,
+    dailyGoal: 8,
+    workStartTime: '09:00',
+    workEndTime: '17:00',
+    motivationalMessages: true,
+    streakReminders: true,
+    weekendMode: false,
     theme: 'light'
   });
   
@@ -82,37 +82,37 @@ const loadSettings = async () => {
       icon: 'Timer',
       settings: [
 {
-          key: 'pomodoro_duration',
+          key: 'pomodoroDuration',
           label: 'Focus Duration (minutes)',
           type: 'number',
           min: 5,
           max: 60,
           description: 'How long each focus session lasts'
         },
-        {
-          key: 'short_break_duration',
+{
+          key: 'shortBreakDuration',
           label: 'Short Break (minutes)',
           type: 'number',
           min: 1,
           max: 15,
           description: 'Short break between focus sessions'
         },
-        {
-          key: 'long_break_duration',
+{
+          key: 'longBreakDuration',
           label: 'Long Break (minutes)',
           type: 'number',
           min: 5,
           max: 30,
           description: 'Long break after 4 focus sessions'
         },
-        {
-          key: 'auto_start_breaks',
+{
+          key: 'autoStartBreaks',
           label: 'Auto-start breaks',
           type: 'toggle',
           description: 'Automatically start break timers'
         },
-        {
-          key: 'auto_start_pomodoros',
+{
+          key: 'autoStartPomodoros',
           label: 'Auto-start pomodoros',
           type: 'toggle',
           description: 'Automatically start next focus session after break'
@@ -129,20 +129,20 @@ const loadSettings = async () => {
           type: 'toggle',
           description: 'Show notifications for timers and achievements'
         },
-        {
-          key: 'sound_enabled',
+{
+          key: 'soundEnabled',
           label: 'Sound effects',
           type: 'toggle',
           description: 'Play sounds for timer alerts'
         },
-        {
-          key: 'motivational_messages',
+{
+          key: 'motivationalMessages',
           label: 'Motivational messages',
           type: 'toggle',
           description: 'Show encouraging messages after completing tasks'
         },
-        {
-          key: 'streak_reminders',
+{
+          key: 'streakReminders',
           label: 'Streak reminders',
           type: 'toggle',
           description: 'Remind you to maintain your daily streak'
@@ -154,27 +154,27 @@ const loadSettings = async () => {
       icon: 'Target',
       settings: [
 {
-          key: 'daily_goal',
+          key: 'dailyGoal',
           label: 'Daily task goal',
           type: 'number',
           min: 1,
           max: 20,
           description: 'Number of tasks you aim to complete daily'
         },
-        {
-          key: 'work_start_time',
+{
+          key: 'workStartTime',
           label: 'Work start time',
           type: 'time',
           description: 'When your productive hours begin'
         },
-        {
-          key: 'work_end_time',
+{
+          key: 'workEndTime',
           label: 'Work end time',
           type: 'time',
           description: 'When your productive hours end'
         },
-        {
-          key: 'weekend_mode',
+{
+          key: 'weekendMode',
           label: 'Relaxed weekend mode',
           type: 'toggle',
           description: 'Reduce goals and reminders on weekends'
