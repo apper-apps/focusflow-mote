@@ -1,10 +1,10 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import Layout from '@/components/organisms/Layout';
 import TasksPage from '@/components/pages/TasksPage';
 import AnalyticsPage from '@/components/pages/AnalyticsPage';
 import SettingsPage from '@/components/pages/SettingsPage';
-
 function App() {
   return (
     <Router>
