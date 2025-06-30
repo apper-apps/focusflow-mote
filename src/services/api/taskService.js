@@ -1,10 +1,98 @@
 import { toast } from "react-toastify";
+import React from "react";
+import Error from "@/components/ui/Error";
+
+// Global ApperClient instance
+let client = null;
+
+// Initialize ApperClient with proper configuration
+async function initializeClient() {
+  if (!client) {
+    const { ApperClient } = window.ApperSDK;
+    client = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+  }
+  return client;
+}
+
+// Ensure client is initialized before use
+async function ensureClient() {
+  if (!client) {
+    await initializeClient();
+  }
+  return client;
+}
+
 class TaskService {
-  constructor() {
-this.apperClient = null;
+  // Utility function to add delay for better UX
+  static async delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-async initializeClient() {
+  // Get all tasks with proper error handling and client initialization
+  static async getAll() {
+    try {
+      // Add small delay for better UX
+      await this.delay(200);
+      
+      // Ensure client is properly initialized
+      const client = await ensureClient();
+      
+      // Set up timeout for the request (30 seconds)
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 30000);
+      });
+      
+      // Configure request parameters using exact field names from schema
+      const params = {
+        fields: [
+          { field: { Name: "Id" } },
+          { field: { Name: "Name" } },
+          { field: { Name: "title" } },
+          { field: { Name: "completed" } },
+          { field: { Name: "priority" } },
+          { field: { Name: "due_date" } },
+          { field: { Name: "order" } },
+          { field: { Name: "points" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
+          { field: { Name: "created_at" } }
+        ],
+        orderBy: [
+          {
+            fieldName: "order",
+            sorttype: "ASC"
+          }
+        ],
+        pagingInfo: {
+          limit: 100,
+          offset: 0
+        }
+      };
+      
+      // Make the API call with timeout protection
+      const fetchPromise = client.fetchRecords('task', params);
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      
+      // Enhanced response validation with detailed logging
+      if (!response) {
+        console.error('No response received from server - possible causes:');
+        console.error('1. Network connectivity issues');
+        console.error('2. Apper backend server unavailable');
+        console.error('3. Invalid API endpoint or table name');
+        console.error('4. Authentication/authorization failure');
+        toast.error('Failed to connect to server. Please check your internet connection.');
+return [];
+      }
+class TaskService {
+  constructor() {
+    this.apperClient = null;
+  }
+
+  async initializeClient() {
     try {
       // Check if ApperSDK is available
       if (!window.ApperSDK) {
@@ -22,7 +110,7 @@ async initializeClient() {
     }
   }
 
-async ensureClient() {
+  async ensureClient() {
     if (!this.apperClient) {
       // Check if SDK is available before attempting initialization
       if (!window.ApperSDK) {
@@ -33,13 +121,11 @@ async ensureClient() {
     }
     return this.apperClient;
   }
-
 async getAll() {
     try {
       // Pre-flight checks for better diagnostics
       if (!window.ApperSDK) {
         console.error('ApperSDK not loaded - script tag may be missing or failed to load');
-        const { toast } = await import('react-toastify');
         toast.error('Application not properly initialized. Please refresh the page.');
         return [];
       }
@@ -47,7 +133,6 @@ async getAll() {
       const client = await this.ensureClient();
       if (!client) {
         console.error('ApperClient initialization failed - check environment variables and SDK status');
-        const { toast } = await import('react-toastify');
         toast.error('Database connection not available. Please check your connection and refresh.');
         return [];
       }
@@ -55,7 +140,6 @@ async getAll() {
       // Validate environment variables are available
       if (!import.meta.env.VITE_APPER_PROJECT_ID || !import.meta.env.VITE_APPER_PUBLIC_KEY) {
         console.error('Missing required environment variables: VITE_APPER_PROJECT_ID or VITE_APPER_PUBLIC_KEY');
-        const { toast } = await import('react-toastify');
         toast.error('Application configuration error. Please contact support.');
         return [];
       }
@@ -88,25 +172,13 @@ async getAll() {
 
       console.log('Attempting to fetch tasks from table "task" with params:', JSON.stringify(params, null, 2));
       
-      // Add timeout wrapper for the API call
+// Add timeout wrapper for the API call
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
       );
       
       const fetchPromise = client.fetchRecords('task', params);
       const response = await Promise.race([fetchPromise, timeoutPromise]);
-      
-      // Enhanced response validation with detailed logging
-      if (!response) {
-        console.error('No response received from server - possible causes:');
-        console.error('1. Network connectivity issues');
-        console.error('2. Apper backend server unavailable');
-        console.error('3. Invalid API endpoint or table name');
-        console.error('4. Authentication/authorization failure');
-        const { toast } = await import('react-toastify');
-        toast.error('Failed to connect to server. Please check your internet connection.');
-        return [];
-      }
       
       if (!response.success) {
         console.error('API request failed with response:', response);
@@ -116,7 +188,6 @@ async getAll() {
           hasData: !!response.data,
           responseKeys: Object.keys(response || {})
         });
-        const { toast } = await import('react-toastify');
         toast.error(response.message || 'Failed to load tasks from database');
         return [];
       }
@@ -136,15 +207,13 @@ async getAll() {
         message: error.message,
         stack: error.stack,
         name: error.name,
-        clientInitialized: !!this.client,
+        clientInitialized: !!client,
         sdkAvailable: !!window.ApperSDK,
         envVarsPresent: {
           projectId: !!import.meta.env.VITE_APPER_PROJECT_ID,
           publicKey: !!import.meta.env.VITE_APPER_PUBLIC_KEY
         }
       });
-      
-      const { toast } = await import('react-toastify');
       
       // Provide more specific error messages based on error type
       if (error.message.includes('timeout')) {
@@ -158,7 +227,6 @@ async getAll() {
       return [];
     }
   }
-
 async getById(id) {
     try {
       const client = await this.ensureClient();
@@ -184,7 +252,6 @@ async getById(id) {
       
       if (!response.success) {
         console.error(response.message);
-        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return null;
       }
@@ -224,7 +291,7 @@ async create(taskData) {
       const response = await client.createRecord('task', params);
       
       if (!response.success) {
-        console.error(response.message);
+console.error(response.message);
         const { toast } = await import('react-toastify');
         toast.error(response.message);
         throw new Error(response.message);
@@ -237,7 +304,6 @@ async create(taskData) {
         if (failedRecords.length > 0) {
           console.error(`Failed to create ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
           
-          const { toast } = await import('react-toastify');
           failedRecords.forEach(record => {
             record.errors?.forEach(error => {
               toast.error(`${error.fieldLabel}: ${error.message}`);
@@ -247,7 +313,6 @@ async create(taskData) {
         }
         
         if (successfulRecords.length > 0) {
-          const { toast } = await import('react-toastify');
           toast.success('Task created successfully');
           return successfulRecords[0].data;
         }
@@ -256,8 +321,7 @@ async create(taskData) {
       throw new Error('Failed to create task');
     } catch (error) {
       console.error('Error creating task:', error);
-      const { toast } = await import('react-toastify');
-      toast.error('Failed to create task');
+toast.error('Failed to create task');
       throw error;
     }
   }
@@ -290,7 +354,6 @@ async update(id, updates) {
       
       if (!response.success) {
         console.error(response.message);
-        const { toast } = await import('react-toastify');
         toast.error(response.message);
         throw new Error(response.message);
       }
@@ -302,7 +365,6 @@ async update(id, updates) {
         if (failedUpdates.length > 0) {
           console.error(`Failed to update ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
           
-          const { toast } = await import('react-toastify');
           failedUpdates.forEach(record => {
             record.errors?.forEach(error => {
               toast.error(`${error.fieldLabel}: ${error.message}`);
@@ -311,8 +373,7 @@ async update(id, updates) {
           });
         }
         
-        if (successfulUpdates.length > 0) {
-          const { toast } = await import('react-toastify');
+if (successfulUpdates.length > 0) {
           toast.success('Task updated successfully');
           return successfulUpdates[0].data;
         }
@@ -340,7 +401,7 @@ async update(id, updates) {
       
       if (!response.success) {
         console.error(response.message);
-        toast.error(response.message);
+toast.error(response.message);
         throw new Error(response.message);
       }
 
@@ -405,7 +466,7 @@ async update(id, updates) {
       const response = await client.fetchRecords('task', params);
       
       if (!response.success) {
-        console.error(response.message);
+console.error(response.message);
         toast.error(response.message);
         return [];
       }
@@ -448,7 +509,6 @@ async getCompleted() {
       
       if (!response.success) {
         console.error(response.message);
-        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return [];
       }
@@ -536,7 +596,6 @@ async getTodayTasks() {
       
       if (!response.success) {
         console.error(response.message);
-        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return [];
       }
@@ -568,7 +627,6 @@ async reorderTasks(taskIds) {
       
       if (!response.success) {
         console.error(response.message);
-        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return false;
       }
@@ -578,12 +636,10 @@ async reorderTasks(taskIds) {
         
         if (failedUpdates.length > 0) {
           console.error(`Failed to reorder ${failedUpdates.length} tasks:${JSON.stringify(failedUpdates)}`);
-          const { toast } = await import('react-toastify');
           toast.error('Some tasks could not be reordered');
           return false;
         }
         
-        const { toast } = await import('react-toastify');
         toast.success('Tasks reordered successfully');
         return true;
       }
