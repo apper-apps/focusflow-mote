@@ -1,12 +1,16 @@
 import { toast } from "react-toastify";
 class TaskService {
   constructor() {
-    this.apperClient = null;
-    this.initializeClient();
+this.apperClient = null;
   }
 
-  async initializeClient() {
+async initializeClient() {
     try {
+      // Check if ApperSDK is available
+      if (!window.ApperSDK) {
+        throw new Error('ApperSDK is not loaded yet');
+      }
+      
       const { ApperClient } = window.ApperSDK;
       this.apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
@@ -14,11 +18,17 @@ class TaskService {
       });
     } catch (error) {
       console.error('Failed to initialize ApperClient:', error);
+      this.apperClient = null;
     }
   }
 
-  async ensureClient() {
+async ensureClient() {
     if (!this.apperClient) {
+      // Check if SDK is available before attempting initialization
+      if (!window.ApperSDK) {
+        console.error('ApperSDK is not available. Make sure the SDK script is loaded.');
+        return null;
+      }
       await this.initializeClient();
     }
     return this.apperClient;
@@ -28,9 +38,9 @@ async getAll() {
     try {
       const client = await this.ensureClient();
       if (!client) {
-        console.error('ApperClient not initialized');
+        console.error('ApperClient not initialized - SDK may not be loaded yet');
         const { toast } = await import('react-toastify');
-        toast.error('Failed to initialize database connection');
+        toast.error('Database connection not available. Please refresh the page.');
         return [];
       }
 
@@ -64,14 +74,14 @@ async getAll() {
       
       // Validate response exists before checking success
       if (!response) {
-        console.error('No response received from server');
+        console.error('No response received from server - network or API issue');
         const { toast } = await import('react-toastify');
-        toast.error('Failed to connect to server');
+        toast.error('Failed to connect to server. Please check your connection.');
         return [];
       }
       
       if (!response.success) {
-        console.error(response.message || 'Unknown error occurred');
+        console.error('API request failed:', response.message || 'Unknown error occurred');
         const { toast } = await import('react-toastify');
         toast.error(response.message || 'Failed to load tasks');
         return [];
@@ -86,7 +96,7 @@ async getAll() {
     } catch (error) {
       console.error('Error fetching tasks:', error);
       const { toast } = await import('react-toastify');
-      toast.error('Failed to load tasks');
+      toast.error('Failed to load tasks. Please try again.');
       return [];
     }
   }
@@ -130,7 +140,7 @@ async getById(id) {
     }
   }
 
-  async create(taskData) {
+async create(taskData) {
     try {
       const client = await this.ensureClient();
       if (!client) throw new Error('ApperClient not initialized');
@@ -157,6 +167,7 @@ async getById(id) {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         throw new Error(response.message);
       }
@@ -168,6 +179,7 @@ async getById(id) {
         if (failedRecords.length > 0) {
           console.error(`Failed to create ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
           
+          const { toast } = await import('react-toastify');
           failedRecords.forEach(record => {
             record.errors?.forEach(error => {
               toast.error(`${error.fieldLabel}: ${error.message}`);
@@ -177,6 +189,7 @@ async getById(id) {
         }
         
         if (successfulRecords.length > 0) {
+          const { toast } = await import('react-toastify');
           toast.success('Task created successfully');
           return successfulRecords[0].data;
         }
@@ -185,12 +198,13 @@ async getById(id) {
       throw new Error('Failed to create task');
     } catch (error) {
       console.error('Error creating task:', error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to create task');
       throw error;
     }
   }
 
-  async update(id, updates) {
+async update(id, updates) {
     try {
       const client = await this.ensureClient();
       if (!client) throw new Error('ApperClient not initialized');
@@ -218,6 +232,7 @@ async getById(id) {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         throw new Error(response.message);
       }
@@ -229,6 +244,7 @@ async getById(id) {
         if (failedUpdates.length > 0) {
           console.error(`Failed to update ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
           
+          const { toast } = await import('react-toastify');
           failedUpdates.forEach(record => {
             record.errors?.forEach(error => {
               toast.error(`${error.fieldLabel}: ${error.message}`);
@@ -238,6 +254,7 @@ async getById(id) {
         }
         
         if (successfulUpdates.length > 0) {
+          const { toast } = await import('react-toastify');
           toast.success('Task updated successfully');
           return successfulUpdates[0].data;
         }
@@ -246,6 +263,7 @@ async getById(id) {
       throw new Error('Failed to update task');
     } catch (error) {
       console.error(`Error updating task with ID ${id}:`, error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to update task');
       throw error;
     }
@@ -342,7 +360,7 @@ async getById(id) {
     }
   }
 
-  async getCompleted() {
+async getCompleted() {
     try {
       const client = await this.ensureClient();
       if (!client) throw new Error('ApperClient not initialized');
@@ -372,12 +390,13 @@ async getById(id) {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return [];
       }
 
       return response.data || [];
-} catch (error) {
+    } catch (error) {
       console.error('Error fetching completed tasks:', error);
       const { toast } = await import('react-toastify');
       toast.error('Failed to load completed tasks');
@@ -517,7 +536,7 @@ async reorderTasks(taskIds) {
       const { toast } = await import('react-toastify');
       toast.error('Failed to reorder tasks');
       return false;
-}
+    }
   }
 }
 
