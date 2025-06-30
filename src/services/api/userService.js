@@ -6,10 +6,9 @@ constructor() {
     // Don't initialize immediately - use lazy initialization
   }
 
-initializeClient() {
+  initializeClient() {
     // Check if SDK is available
     if (!window.ApperSDK) {
-      console.warn('Apper SDK not yet loaded. Waiting...');
       return false;
     }
 
@@ -26,14 +25,37 @@ initializeClient() {
     }
   }
 
+  async waitForSDK(maxWaitTime = 10000) {
+    const pollInterval = 100;
+    const maxAttempts = maxWaitTime / pollInterval;
+    let attempts = 0;
+
+    return new Promise((resolve, reject) => {
+      const checkSDK = () => {
+        attempts++;
+        
+        if (this.initializeClient()) {
+          resolve(true);
+          return;
+        }
+
+        if (attempts >= maxAttempts) {
+          reject(new Error('Apper SDK failed to load within the expected time. Please refresh the page.'));
+          return;
+        }
+
+        setTimeout(checkSDK, pollInterval);
+      };
+
+      checkSDK();
+    });
+  }
+
 async getStats() {
     try {
       // Ensure client is initialized
-      if (!this.apperClient) {
-        const initialized = this.initializeClient();
-        if (!initialized || !this.apperClient) {
-          throw new Error('Apper SDK is not loaded yet. Please wait for the application to fully initialize.');
-        }
+if (!this.apperClient) {
+        await this.waitForSDK();
       }
       const params = {
         fields: [
@@ -108,11 +130,8 @@ async getStats() {
 async updateStats(updates) {
     try {
       // Ensure client is initialized
-      if (!this.apperClient) {
-        const initialized = this.initializeClient();
-        if (!initialized || !this.apperClient) {
-          throw new Error('Apper SDK is not loaded yet. Please wait for the application to fully initialize.');
-        }
+if (!this.apperClient) {
+        await this.waitForSDK();
       }
       // Get current stats first to find the record ID
       const currentStats = await this.getStats();
