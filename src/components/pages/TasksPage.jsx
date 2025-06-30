@@ -11,11 +11,11 @@ import userService from '@/services/api/userService';
 
 const TasksPage = () => {
   const { isMinimalMode } = useOutletContext();
-  const [userStats, setUserStats] = useState({
+const [userStats, setUserStats] = useState({
     streak: 0,
     level: 1,
-    totalPoints: 0,
-    todayPoints: 0
+    total_points: 0,
+    today_points: 0
   });
   const [showFloatingTimer, setShowFloatingTimer] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState('all');
@@ -34,9 +34,9 @@ const loadUserStats = async () => {
   };
 
   const handleTaskComplete = async (task) => {
-    // Update user stats
-    const newTodayPoints = userStats.todayPoints + task.points;
-    const newTotalPoints = userStats.totalPoints + task.points;
+// Update user stats
+    const newTodayPoints = userStats.today_points + task.points;
+    const newTotalPoints = userStats.total_points + task.points;
     const newLevel = Math.floor(newTotalPoints / 100) + 1;
     
     // Check for level up
@@ -52,14 +52,14 @@ const loadUserStats = async () => {
 
     setUserStats(prev => ({
       ...prev,
-      todayPoints: newTodayPoints,
-      totalPoints: newTotalPoints,
+      today_points: newTodayPoints,
+      total_points: newTotalPoints,
       level: newLevel,
       streak: newStreak
     }));
 
     // Save updated stats
-try {
+    try {
       await userService.updateStats({
         today_points: newTodayPoints,
         total_points: newTotalPoints,
