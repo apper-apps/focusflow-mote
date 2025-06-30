@@ -56,7 +56,7 @@ constructor() {
 async getStats() {
     try {
       // Ensure client is initialized
-if (!this.apperClient) {
+      if (!this.apperClient) {
         await this.waitForSDK();
       }
       const params = {
@@ -76,9 +76,9 @@ if (!this.apperClient) {
         ]
       };
 
-const response = await this.apperClient.fetchRecords('user_stats', params);
+      const response = await this.apperClient.fetchRecords('user_stats', params);
       
-if (!response.success) {
+      if (!response.success) {
         console.error(response.message);
         return {
           streak: 0,
@@ -131,13 +131,13 @@ if (!response.success) {
         total_focus_time: 0,
         pomodoros_completed: 0
       };
-    }
+}
   }
 
-async updateStats(updates) {
+  async updateStats(updates) {
     try {
       // Ensure client is initialized
-if (!this.apperClient) {
+      if (!this.apperClient) {
         await this.waitForSDK();
       }
       // Get current stats first to find the record ID
@@ -165,7 +165,7 @@ if (!this.apperClient) {
         records: [updateData]
       };
 
-const response = await this.apperClient.updateRecord('user_stats', params);
+      const response = await this.apperClient.updateRecord('user_stats', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -177,7 +177,7 @@ const response = await this.apperClient.updateRecord('user_stats', params);
         const failedUpdates = response.results.filter(result => !result.success);
         
         if (failedUpdates.length > 0) {
-          console.error(`Failed to update ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
+          console.error(`Failed to update ${failedUpdates.length} records: ${JSON.stringify(failedUpdates)}`);
           
           failedUpdates.forEach(record => {
             record.errors?.forEach(error => {
@@ -281,4 +281,5 @@ const response = await this.apperClient.updateRecord('user_stats', params);
   }
 }
 
+// Export singleton instance
 export default new UserService();

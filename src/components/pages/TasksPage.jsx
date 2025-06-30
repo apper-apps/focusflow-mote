@@ -7,7 +7,7 @@ import GamificationPanel from '@/components/molecules/GamificationPanel';
 import StatsCard from '@/components/molecules/StatsCard';
 import ApperIcon from '@/components/ApperIcon';
 import MotivationalToast from '@/components/molecules/MotivationalToast';
-import UserService from '@/services/api/userService';
+import userService from '@/services/api/userService';
 
 const TasksPage = () => {
   const { isMinimalMode } = useOutletContext();
@@ -26,7 +26,7 @@ const TasksPage = () => {
 
 const loadUserStats = async () => {
     try {
-      const stats = await UserService.getStats();
+      const stats = await userService.getStats();
       setUserStats(stats);
     } catch (err) {
       console.error('Failed to load user stats:', err);
@@ -60,7 +60,7 @@ const loadUserStats = async () => {
 
     // Save updated stats
 try {
-      await UserService.updateStats({
+      await userService.updateStats({
         today_points: newTodayPoints,
         total_points: newTotalPoints,
         level: newLevel,
