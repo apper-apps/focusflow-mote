@@ -25,10 +25,15 @@ class TaskService {
     return this.apperClient;
   }
 
-  async getAll() {
+async getAll() {
     try {
       const client = await this.ensureClient();
-      if (!client) throw new Error('ApperClient not initialized');
+      if (!client) {
+        console.error('ApperClient not initialized');
+        const { toast } = await import('react-toastify');
+        toast.error('Failed to initialize database connection');
+        return [];
+      }
 
       const params = {
         fields: [
@@ -58,20 +63,30 @@ class TaskService {
 
       const response = await client.fetchRecords('task', params);
       
+      // Validate response exists before checking success
+      if (!response) {
+        console.error('No response received from server');
+        const { toast } = await import('react-toastify');
+        toast.error('Failed to connect to server');
+        return [];
+      }
+      
       if (!response.success) {
-        console.error(response.message);
-        toast.error(response.message);
+        console.error(response.message || 'Unknown error occurred');
+        const { toast } = await import('react-toastify');
+        toast.error(response.message || 'Failed to load tasks');
         return [];
       }
 
       // Handle empty or non-existent data
-      if (!response || !response.data || response.data.length === 0) {
+      if (!response.data || response.data.length === 0) {
         return [];
       }
 
       return response.data;
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to load tasks');
       return [];
     }
