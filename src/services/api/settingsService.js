@@ -48,9 +48,8 @@ async getSettings() {
 
       const response = await this.apperClient.fetchRecords('settings', params);
       
-      if (!response.success) {
+if (!response.success) {
         console.error(response.message);
-        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return this.getDefaultSettings();
       }
@@ -84,10 +83,9 @@ async getSettings() {
         };
       }
 
-      return this.getDefaultSettings();
+return this.getDefaultSettings();
     } catch (error) {
       console.error('Error fetching settings:', error);
-      const { toast } = await import('react-toastify');
       toast.error('Failed to load settings');
       return this.getDefaultSettings();
     }
@@ -160,8 +158,7 @@ async updateSettings(updates) {
       const response = await this.apperClient.updateRecord('settings', params);
       
       if (!response.success) {
-        console.error(response.message);
-        const { toast } = await import('react-toastify');
+console.error(response.message);
         toast.error(response.message);
         throw new Error(response.message);
       }
@@ -170,10 +167,9 @@ async updateSettings(updates) {
         const successfulUpdates = response.results.filter(result => result.success);
         const failedUpdates = response.results.filter(result => !result.success);
         
-        if (failedUpdates.length > 0) {
+if (failedUpdates.length > 0) {
           console.error(`Failed to update ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
           
-          const { toast } = await import('react-toastify');
           failedUpdates.forEach(record => {
             record.errors?.forEach(error => {
               toast.error(`${error.fieldLabel}: ${error.message}`);
@@ -182,8 +178,7 @@ async updateSettings(updates) {
           });
         }
         
-        if (successfulUpdates.length > 0) {
-          const { toast } = await import('react-toastify');
+if (successfulUpdates.length > 0) {
           toast.success('Settings updated successfully');
           return successfulUpdates[0].data;
         }
@@ -191,8 +186,7 @@ async updateSettings(updates) {
 
       throw new Error('Failed to update settings');
     } catch (error) {
-      console.error('Error updating settings:', error);
-      const { toast } = await import('react-toastify');
+console.error('Error updating settings:', error);
       toast.error('Failed to update settings');
       throw error;
     }
