@@ -78,33 +78,7 @@ async getStats() {
         }
       };
 
-const response = await this.apperClient.fetchRecords('user_stats', params);
-      
-// Initialize ApperClient with Project ID and Public Key
-      const { ApperClient } = window.ApperSDK;
-      const apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
-
-      // Define fields to fetch from user_stats table
-      const params = {
-        fields: [
-          { field: { Name: "streak" } },
-          { field: { Name: "level" } },
-          { field: { Name: "total_points" } },
-          { field: { Name: "today_points" } },
-          { field: { Name: "longest_streak" } },
-          { field: { Name: "tasks_completed_today" } },
-          { field: { Name: "tasks_completed_this_week" } },
-          { field: { Name: "total_tasks_completed" } },
-          { field: { Name: "average_focus_time" } },
-          { field: { Name: "total_focus_time" } },
-          { field: { Name: "pomodoros_completed" } }
-        ]
-      };
-
-      const response = await apperClient.fetchRecords("user_stats", params);
+      const response = await this.apperClient.fetchRecords('user_stats', params);
 
       if (!response.success) {
         console.error('Failed to fetch user stats:', response.message);
@@ -155,7 +129,7 @@ const response = await this.apperClient.fetchRecords('user_stats', params);
         total_focus_time: stats.total_focus_time || 0,
         pomodoros_completed: stats.pomodoros_completed || 0
       };
-} catch (error) {
+    } catch (error) {
       console.error('Error fetching user stats:', error);
       toast.error('Failed to load user stats');
       return {
