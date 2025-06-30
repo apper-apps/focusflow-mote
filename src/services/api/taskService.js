@@ -4,40 +4,58 @@ class TaskService {
 constructor() {
     this.apperClient = null;
     this.isInitializing = false;
-    this.initializeClient();
+    this.initializationPromise = null;
   }
 
-  async initializeClient(retryCount = 0, maxRetries = 5) {
-    if (this.apperClient || this.isInitializing) return;
-    
-    this.isInitializing = true;
-    
-    try {
-      if (window.ApperSDK) {
-        const { ApperClient } = window.ApperSDK;
-        this.apperClient = new ApperClient({
-          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-        });
-        this.isInitializing = false;
-        return;
-      }
-      
-      // If SDK not available and we haven't exceeded retries, wait and try again
-      if (retryCount < maxRetries) {
-        const delay = Math.pow(2, retryCount) * 100; // Exponential backoff
-        setTimeout(() => {
-          this.isInitializing = false;
-          this.initializeClient(retryCount + 1, maxRetries);
-        }, delay);
-      } else {
-        this.isInitializing = false;
-        console.error('ApperSDK not available after maximum retries');
-      }
-    } catch (error) {
-      this.isInitializing = false;
-      console.error('Error initializing ApperClient:', error);
+async initializeClient() {
+    // Return existing promise if initialization is already in progress
+    if (this.initializationPromise) {
+      return this.initializationPromise;
     }
+    
+    // Return immediately if already initialized
+    if (this.apperClient) {
+      return Promise.resolve();
+    }
+    
+    // Create new initialization promise
+    this.initializationPromise = new Promise(async (resolve, reject) => {
+      try {
+        // Wait for ApperSDK to be available with retries
+        let retryCount = 0;
+        const maxRetries = 10;
+        
+        while (retryCount < maxRetries) {
+          if (window.ApperSDK) {
+            const { ApperClient } = window.ApperSDK;
+            this.apperClient = new ApperClient({
+              apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+              apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+            });
+            this.initializationPromise = null;
+            resolve();
+            return;
+          }
+          
+          // Wait before retrying with exponential backoff
+          const delay = Math.min(1000, Math.pow(2, retryCount) * 100);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          retryCount++;
+        }
+        
+        // Max retries exceeded
+        this.initializationPromise = null;
+        const error = new Error('ApperSDK not available after maximum retries');
+        console.error(error.message);
+        reject(error);
+      } catch (error) {
+        this.initializationPromise = null;
+        console.error('Error initializing ApperClient:', error);
+        reject(error);
+      }
+    });
+    
+    return this.initializationPromise;
   }
 
 async getAll() {
