@@ -1,0 +1,83 @@
+{
+  "Id": 1,
+  "tasksCompleted": 18,
+  "totalFocusTime": 435,
+  "averageFocusSession": 24,
+  "productivityScore": 87,
+  "dailyStats": [
+    {
+      "date": "2024-01-08",
+      "tasksCompleted": 4,
+      "focusTime": 95,
+      "completionRate": 80,
+      "pomodorosCompleted": 4
+    },
+    {
+      "date": "2024-01-09",
+      "tasksCompleted": 3,
+      "focusTime": 75,
+      "completionRate": 75,
+      "pomodorosCompleted": 3
+    },
+    {
+      "date": "2024-01-10",
+      "tasksCompleted": 5,
+      "focusTime": 120,
+      "completionRate": 100,
+      "pomodorosCompleted": 5
+    },
+    {
+      "date": "2024-01-11",
+      "tasksCompleted": 2,
+      "focusTime": 50,
+      "completionRate": 66,
+      "pomodorosCompleted": 2
+    },
+    {
+      "date": "2024-01-12",
+      "tasksCompleted": 4,
+      "focusTime": 95,
+      "completionRate": 80,
+      "pomodorosCompleted": 4
+    }
+  ],
+  "weeklyTrend": {
+    "bestDay": "Wednesday",
+    "bestDayTasks": 5,
+    "peakHour": "10:00 AM",
+    "peakFocusMinutes": 45,
+    "improvement": 15
+  },
+  "priorityBreakdown": [
+    {
+      "level": "high",
+      "completed": 6,
+      "total": 8,
+      "percentage": 75
+    },
+    {
+      "level": "medium",
+      "completed": 8,
+      "total": 10,
+      "percentage": 80
+    },
+    {
+      "level": "low",
+      "completed": 4,
+      "total": 5,
+      "percentage": 80
+    }
+  ],
+  "streakData": {
+    "current": 7,
+    "longest": 14,
+    "thisMonth": 7,
+    "averageThisMonth": 5.2
+  },
+  "focusPatterns": {
+    "bestFocusHours": ["09:00", "10:00", "14:00"],
+    "averageSessionLength": 24,
+    "mostProductiveDays": ["Monday", "Wednesday", "Friday"],
+    "distractionTriggers": ["afternoon", "after lunch"]
+  }
+}

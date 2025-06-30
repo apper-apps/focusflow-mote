@@ -1,0 +1,52 @@
+{
+  "Id": 1,
+  "streak": 7,
+  "level": 3,
+  "totalPoints": 285,
+  "todayPoints": 25,
+  "longestStreak": 14,
+  "tasksCompletedToday": 3,
+  "tasksCompletedThisWeek": 12,
+  "totalTasksCompleted": 47,
+  "averageFocusTime": 23,
+  "totalFocusTime": 1450,
+  "pomodorosCompleted": 58,
+  "achievements": [
+    {
+      "Id": 1,
+      "name": "First Steps",
+      "description": "Complete your first task",
+      "unlocked": true,
+      "unlockedAt": "2024-01-05T10:00:00Z"
+    },
+    {
+      "Id": 2,
+      "name": "Week Warrior",
+      "description": "Maintain a 7-day streak",
+      "unlocked": true,
+      "unlockedAt": "2024-01-12T18:30:00Z"
+    },
+    {
+      "Id": 3,
+      "name": "Century Club",
+      "description": "Earn 100+ total points",
+      "unlocked": true,
+      "unlockedAt": "2024-01-08T14:20:00Z"
+    },
+    {
+      "Id": 4,
+      "name": "Focus Master",
+      "description": "Complete 50 pomodoro sessions",
+      "unlocked": true,
+      "unlockedAt": "2024-01-11T16:45:00Z"
+    }
+  ],
+  "preferences": {
+    "pomodoroLength": 25,
+    "shortBreakLength": 5,
+    "longBreakLength": 15,
+    "autoStartBreaks": true,
+    "soundEnabled": true,
+    "notificationsEnabled": true
+  }
+}

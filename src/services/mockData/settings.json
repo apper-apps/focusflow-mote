@@ -1,0 +1,23 @@
+{
+  "Id": 1,
+  "pomodoroDuration": 25,
+  "shortBreakDuration": 5,
+  "longBreakDuration": 15,
+  "autoStartBreaks": true,
+  "autoStartPomodoros": false,
+  "notifications": true,
+  "soundEnabled": true,
+  "dailyGoal": 8,
+  "workStartTime": "09:00",
+  "workEndTime": "17:00",
+  "motivationalMessages": true,
+  "streakReminders": true,
+  "weekendMode": false,
+  "theme": "light",
+  "language": "en",
+  "timezone": "America/New_York",
+  "emailNotifications": false,
+  "weeklyReports": true,
+  "dataRetention": 365,
+  "privacyMode": false
+}

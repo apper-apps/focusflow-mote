@@ -1,0 +1,160 @@
+@import 'react-toastify/dist/ReactToastify.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  color: #1f2937;
+  background-color: #f8f9fa;
+}
+
+.font-display {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Toast Overrides */
+.Toastify__toast-container {
+  width: auto;
+  max-width: 400px;
+}
+
+.Toastify__toast {
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 12px 16px;
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
+  color: white;
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #F44336 0%, #E53935 100%);
+  color: white;
+}
+
+.Toastify__toast--warning {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  color: white;
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+}
+
+.Toastify__progress-bar {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Drag and Drop Styles */
+.task-dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+}
+
+.task-drag-over {
+  border-top: 2px solid #5B4CDB;
+}
+
+/* Timer Circle Animation */
+.timer-circle {
+  transition: stroke-dasharray 0.5s ease-in-out;
+}
+
+/* Checkbox Animation */
+.checkbox-checked {
+  animation: bounce-gentle 0.3s ease-in-out;
+}
+
+/* Focus Mode */
+.focus-mode {
+  backdrop-filter: blur(10px);
+  background: rgba(248, 249, 250, 0.95);
+}
+
+/* Floating Timer */
+.floating-timer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Gamification Effects */
+.level-up-animation {
+  animation: confetti 0.8s ease-out;
+}
+
+.streak-flame {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Task Priority Colors */
+.priority-high {
+  border-left: 4px solid #FC4A1A;
+}
+
+.priority-medium {
+  border-left: 4px solid #F7B733;
+}
+
+.priority-low {
+  border-left: 4px solid #4CAF50;
+}
+
+/* Minimal Mode */
+.minimal-mode {
+  background: #ffffff;
+}
+
+.minimal-mode .sidebar {
+  display: none;
+}
+
+.minimal-mode .header {
+  background: transparent;
+  border: none;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .floating-timer {
+    top: 10px;
+    right: 10px;
+    transform: scale(0.9);
+  }
+}
