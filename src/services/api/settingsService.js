@@ -6,7 +6,7 @@ class SettingsService {
     this.initializeClient();
   }
 
-  initializeClient() {
+initializeClient() {
     if (window.ApperSDK) {
       const { ApperClient } = window.ApperSDK;
       this.apperClient = new ApperClient({
@@ -16,7 +16,7 @@ class SettingsService {
     }
   }
 
-  async getSettings() {
+async getSettings() {
     try {
       if (!this.apperClient) this.initializeClient();
       
@@ -50,14 +50,44 @@ class SettingsService {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         return this.getDefaultSettings();
       }
 
-      // Return first record or default values
-      return response.data?.[0] || this.getDefaultSettings();
+      // Convert database field names to camelCase for frontend compatibility
+      const rawData = response.data?.[0];
+      if (rawData) {
+        return {
+          Id: rawData.Id,
+          Name: rawData.Name,
+          pomodoroDuration: rawData.pomodoro_duration || 25,
+          shortBreakDuration: rawData.short_break_duration || 5,
+          longBreakDuration: rawData.long_break_duration || 15,
+          autoStartBreaks: rawData.auto_start_breaks !== undefined ? rawData.auto_start_breaks : true,
+          autoStartPomodoros: rawData.auto_start_pomodoros !== undefined ? rawData.auto_start_pomodoros : false,
+          notifications: rawData.notifications !== undefined ? rawData.notifications : true,
+          soundEnabled: rawData.sound_enabled !== undefined ? rawData.sound_enabled : true,
+          dailyGoal: rawData.daily_goal || 8,
+          workStartTime: rawData.work_start_time || '09:00',
+          workEndTime: rawData.work_end_time || '17:00',
+          motivationalMessages: rawData.motivational_messages !== undefined ? rawData.motivational_messages : true,
+          streakReminders: rawData.streak_reminders !== undefined ? rawData.streak_reminders : true,
+          weekendMode: rawData.weekend_mode !== undefined ? rawData.weekend_mode : false,
+          theme: rawData.theme || 'light',
+          language: rawData.language || 'en',
+          timezone: rawData.timezone || 'UTC',
+          emailNotifications: rawData.email_notifications !== undefined ? rawData.email_notifications : false,
+          weeklyReports: rawData.weekly_reports !== undefined ? rawData.weekly_reports : false,
+          dataRetention: rawData.data_retention || 365,
+          privacyMode: rawData.privacy_mode !== undefined ? rawData.privacy_mode : false
+        };
+      }
+
+      return this.getDefaultSettings();
     } catch (error) {
       console.error('Error fetching settings:', error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to load settings');
       return this.getDefaultSettings();
     }
@@ -89,7 +119,7 @@ class SettingsService {
     };
   }
 
-  async updateSettings(updates) {
+async updateSettings(updates) {
     try {
       if (!this.apperClient) this.initializeClient();
       
@@ -100,28 +130,28 @@ class SettingsService {
         Id: currentSettings.Id || 1
       };
 
-      // Only include updateable fields
+      // Convert camelCase frontend properties to snake_case database fields
       if (updates.Name !== undefined) updateData.Name = updates.Name;
-      if (updates.pomodoro_duration !== undefined) updateData.pomodoro_duration = updates.pomodoro_duration;
-      if (updates.short_break_duration !== undefined) updateData.short_break_duration = updates.short_break_duration;
-      if (updates.long_break_duration !== undefined) updateData.long_break_duration = updates.long_break_duration;
-      if (updates.auto_start_breaks !== undefined) updateData.auto_start_breaks = updates.auto_start_breaks;
-      if (updates.auto_start_pomodoros !== undefined) updateData.auto_start_pomodoros = updates.auto_start_pomodoros;
+      if (updates.pomodoroDuration !== undefined) updateData.pomodoro_duration = updates.pomodoroDuration;
+      if (updates.shortBreakDuration !== undefined) updateData.short_break_duration = updates.shortBreakDuration;
+      if (updates.longBreakDuration !== undefined) updateData.long_break_duration = updates.longBreakDuration;
+      if (updates.autoStartBreaks !== undefined) updateData.auto_start_breaks = updates.autoStartBreaks;
+      if (updates.autoStartPomodoros !== undefined) updateData.auto_start_pomodoros = updates.autoStartPomodoros;
       if (updates.notifications !== undefined) updateData.notifications = updates.notifications;
-      if (updates.sound_enabled !== undefined) updateData.sound_enabled = updates.sound_enabled;
-      if (updates.daily_goal !== undefined) updateData.daily_goal = updates.daily_goal;
-      if (updates.work_start_time !== undefined) updateData.work_start_time = updates.work_start_time;
-      if (updates.work_end_time !== undefined) updateData.work_end_time = updates.work_end_time;
-      if (updates.motivational_messages !== undefined) updateData.motivational_messages = updates.motivational_messages;
-      if (updates.streak_reminders !== undefined) updateData.streak_reminders = updates.streak_reminders;
-      if (updates.weekend_mode !== undefined) updateData.weekend_mode = updates.weekend_mode;
+      if (updates.soundEnabled !== undefined) updateData.sound_enabled = updates.soundEnabled;
+      if (updates.dailyGoal !== undefined) updateData.daily_goal = updates.dailyGoal;
+      if (updates.workStartTime !== undefined) updateData.work_start_time = updates.workStartTime;
+      if (updates.workEndTime !== undefined) updateData.work_end_time = updates.workEndTime;
+      if (updates.motivationalMessages !== undefined) updateData.motivational_messages = updates.motivationalMessages;
+      if (updates.streakReminders !== undefined) updateData.streak_reminders = updates.streakReminders;
+      if (updates.weekendMode !== undefined) updateData.weekend_mode = updates.weekendMode;
       if (updates.theme !== undefined) updateData.theme = updates.theme;
       if (updates.language !== undefined) updateData.language = updates.language;
       if (updates.timezone !== undefined) updateData.timezone = updates.timezone;
-      if (updates.email_notifications !== undefined) updateData.email_notifications = updates.email_notifications;
-      if (updates.weekly_reports !== undefined) updateData.weekly_reports = updates.weekly_reports;
-      if (updates.data_retention !== undefined) updateData.data_retention = updates.data_retention;
-      if (updates.privacy_mode !== undefined) updateData.privacy_mode = updates.privacy_mode;
+      if (updates.emailNotifications !== undefined) updateData.email_notifications = updates.emailNotifications;
+      if (updates.weeklyReports !== undefined) updateData.weekly_reports = updates.weeklyReports;
+      if (updates.dataRetention !== undefined) updateData.data_retention = updates.dataRetention;
+      if (updates.privacyMode !== undefined) updateData.privacy_mode = updates.privacyMode;
 
       const params = {
         records: [updateData]
@@ -131,6 +161,7 @@ class SettingsService {
       
       if (!response.success) {
         console.error(response.message);
+        const { toast } = await import('react-toastify');
         toast.error(response.message);
         throw new Error(response.message);
       }
@@ -142,6 +173,7 @@ class SettingsService {
         if (failedUpdates.length > 0) {
           console.error(`Failed to update ${failedUpdates.length} records:${JSON.stringify(failedUpdates)}`);
           
+          const { toast } = await import('react-toastify');
           failedUpdates.forEach(record => {
             record.errors?.forEach(error => {
               toast.error(`${error.fieldLabel}: ${error.message}`);
@@ -151,6 +183,7 @@ class SettingsService {
         }
         
         if (successfulUpdates.length > 0) {
+          const { toast } = await import('react-toastify');
           toast.success('Settings updated successfully');
           return successfulUpdates[0].data;
         }
@@ -159,6 +192,7 @@ class SettingsService {
       throw new Error('Failed to update settings');
     } catch (error) {
       console.error('Error updating settings:', error);
+      const { toast } = await import('react-toastify');
       toast.error('Failed to update settings');
       throw error;
     }
