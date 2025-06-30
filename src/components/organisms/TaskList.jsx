@@ -18,8 +18,15 @@ const loadTasks = async () => {
       setLoading(true);
       setError('');
       const data = await TaskService.getAll();
-      setTasks(data.sort((a, b) => a.order - b.order));
+      // Sort by order field, handling null/undefined values
+      const sortedData = data.sort((a, b) => {
+        const aOrder = a.order || 0;
+        const bOrder = b.order || 0;
+        return aOrder - bOrder;
+      });
+      setTasks(sortedData);
     } catch (err) {
+      console.error('Error loading tasks:', err);
       setError('Failed to load tasks. Please try again.');
     } finally {
       setLoading(false);

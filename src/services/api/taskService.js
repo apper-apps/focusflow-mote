@@ -1,90 +1,62 @@
 import { toast } from 'react-toastify';
 
 class TaskService {
-constructor() {
+  constructor() {
     this.apperClient = null;
-    this.isInitializing = false;
-    this.initializationPromise = null;
+    this.initializeClient();
   }
 
-async initializeClient() {
-    // Return existing promise if initialization is already in progress
-    if (this.initializationPromise) {
-      return this.initializationPromise;
-    }
-    
-    // Return immediately if already initialized
-    if (this.apperClient) {
-      return Promise.resolve();
-    }
-    
-    // Create new initialization promise
-    this.initializationPromise = new Promise(async (resolve, reject) => {
-      try {
-        // Wait for ApperSDK to be available with retries
-        let retryCount = 0;
-        const maxRetries = 20; // Increased retry limit for slower loading
-        
-        while (retryCount < maxRetries) {
-          if (window.ApperSDK) {
-            const { ApperClient } = window.ApperSDK;
-            this.apperClient = new ApperClient({
-              apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-              apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-            });
-            this.initializationPromise = null;
-            resolve();
-            return;
-          }
-          
-          // Wait before retrying with enhanced exponential backoff
-          const delay = Math.min(5000, Math.pow(2, retryCount) * 200);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          retryCount++;
-        }
-        
-        // Max retries exceeded
-        this.initializationPromise = null;
-        const error = new Error(`ApperSDK not available after ${maxRetries} retries. Please ensure the SDK script is properly loaded.`);
-        console.error('SDK Initialization Error:', error.message, 'Retries attempted:', retryCount);
-        reject(error);
-      } catch (error) {
-        this.initializationPromise = null;
-        console.error('Error initializing ApperClient:', error);
-        reject(error);
-      }
-    });
-    
-    return this.initializationPromise;
-  }
-
-async getAll() {
+  async initializeClient() {
     try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
+      const { ApperClient } = window.ApperSDK;
+      this.apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+    } catch (error) {
+      console.error('Failed to initialize ApperClient:', error);
+    }
+  }
+
+  async ensureClient() {
+    if (!this.apperClient) {
+      await this.initializeClient();
+    }
+    return this.apperClient;
+  }
+
+  async getAll() {
+    try {
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const params = {
         fields: [
           { field: { Name: "Name" } },
-          { field: { Name: "Tags" } },
-          { field: { Name: "Owner" } },
           { field: { Name: "title" } },
           { field: { Name: "completed" } },
           { field: { Name: "priority" } },
           { field: { Name: "due_date" } },
           { field: { Name: "order" } },
           { field: { Name: "points" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
           { field: { Name: "created_at" } }
         ],
         orderBy: [
-          { fieldName: "order", sorttype: "ASC" }
-        ]
+          {
+            fieldName: "order",
+            sorttype: "ASC"
+          }
+        ],
+        pagingInfo: {
+          limit: 100,
+          offset: 0
+        }
       };
 
-      const response = await this.apperClient.fetchRecords('task', params);
+      const response = await client.fetchRecords('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -92,7 +64,12 @@ async getAll() {
         return [];
       }
 
-      return response.data || [];
+      // Handle empty or non-existent data
+      if (!response || !response.data || response.data.length === 0) {
+        return [];
+      }
+
+      return response.data;
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast.error('Failed to load tasks');
@@ -100,30 +77,28 @@ async getAll() {
     }
   }
 
-async getById(id) {
+  async getById(id) {
     try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const params = {
         fields: [
           { field: { Name: "Name" } },
-          { field: { Name: "Tags" } },
-          { field: { Name: "Owner" } },
           { field: { Name: "title" } },
           { field: { Name: "completed" } },
           { field: { Name: "priority" } },
           { field: { Name: "due_date" } },
           { field: { Name: "order" } },
           { field: { Name: "points" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "CreatedOn" } },
           { field: { Name: "created_at" } }
         ]
       };
 
-      const response = await this.apperClient.getRecordById('task', parseInt(id), params);
+      const response = await client.getRecordById('task', id, params);
       
       if (!response.success) {
         console.error(response.message);
@@ -140,29 +115,29 @@ async getById(id) {
   }
 
   async create(taskData) {
-try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
-      
-      const params = {
-        records: [{
-          Name: taskData.Name || taskData.title || '',
-          Tags: taskData.Tags || '',
-          title: taskData.title || '',
-          completed: false,
-          priority: taskData.priority || 'medium',
-          due_date: taskData.due_date || taskData.dueDate || null,
-          order: taskData.order || 0,
-          points: taskData.points || 5,
-          created_at: new Date().toISOString()
-        }]
+    try {
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
+      // Only include Updateable fields for creation
+      const filteredData = {
+        Name: taskData.Name || taskData.title || 'Untitled Task',
+        title: taskData.title || taskData.Name || 'Untitled Task',
+        completed: taskData.completed || false,
+        priority: taskData.priority || 'medium',
+        due_date: taskData.due_date || null,
+        order: taskData.order || 0,
+        points: taskData.points || 1,
+        Tags: taskData.Tags || '',
+        Owner: taskData.Owner || null,
+        created_at: new Date().toISOString()
       };
 
-      const response = await this.apperClient.createRecord('task', params);
+      const params = {
+        records: [filteredData]
+      };
+
+      const response = await client.createRecord('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -199,33 +174,31 @@ try {
     }
   }
 
-async update(id, updates) {
+  async update(id, updates) {
     try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
-      const updateData = {
-        Id: parseInt(id)
-      };
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
 
-      // Only include updateable fields
-      if (updates.Name !== undefined) updateData.Name = updates.Name;
-      if (updates.Tags !== undefined) updateData.Tags = updates.Tags;
-      if (updates.title !== undefined) updateData.title = updates.title;
-      if (updates.completed !== undefined) updateData.completed = updates.completed;
-      if (updates.priority !== undefined) updateData.priority = updates.priority;
-      if (updates.due_date !== undefined) updateData.due_date = updates.due_date;
-      if (updates.order !== undefined) updateData.order = updates.order;
-      if (updates.points !== undefined) updateData.points = updates.points;
+      // Only include Updateable fields for update
+      const filteredUpdates = {};
+      const updateableFields = ['Name', 'title', 'completed', 'priority', 'due_date', 'order', 'points', 'Tags', 'Owner', 'created_at'];
+      
+      Object.keys(updates).forEach(key => {
+        if (updateableFields.includes(key)) {
+          filteredUpdates[key] = updates[key];
+        }
+      });
 
       const params = {
-        records: [updateData]
+        records: [
+          {
+            Id: id,
+            ...filteredUpdates
+          }
+        ]
       };
 
-      const response = await this.apperClient.updateRecord('task', params);
+      const response = await client.updateRecord('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -256,31 +229,27 @@ async update(id, updates) {
 
       throw new Error('Failed to update task');
     } catch (error) {
-      console.error('Error updating task:', error);
+      console.error(`Error updating task with ID ${id}:`, error);
       toast.error('Failed to update task');
       throw error;
     }
   }
 
   async delete(id) {
-try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
-      
+    try {
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const params = {
-        RecordIds: [parseInt(id)]
+        RecordIds: [id]
       };
 
-      const response = await this.apperClient.deleteRecord('task', params);
+      const response = await client.deleteRecord('task', params);
       
       if (!response.success) {
         console.error(response.message);
         toast.error(response.message);
-        return false;
+        throw new Error(response.message);
       }
 
       if (response.results) {
@@ -303,32 +272,28 @@ try {
 
       return false;
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error(`Error deleting task with ID ${id}:`, error);
       toast.error('Failed to delete task');
-      return false;
+      throw error;
     }
   }
 
-async getByPriority(priority) {
+  async getByPriority(priority) {
     try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const params = {
         fields: [
           { field: { Name: "Name" } },
-          { field: { Name: "Tags" } },
-          { field: { Name: "Owner" } },
           { field: { Name: "title" } },
           { field: { Name: "completed" } },
           { field: { Name: "priority" } },
           { field: { Name: "due_date" } },
           { field: { Name: "order" } },
           { field: { Name: "points" } },
-          { field: { Name: "created_at" } }
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } }
         ],
         where: [
           {
@@ -338,11 +303,14 @@ async getByPriority(priority) {
           }
         ],
         orderBy: [
-          { fieldName: "order", sorttype: "ASC" }
+          {
+            fieldName: "order",
+            sorttype: "ASC"
+          }
         ]
       };
 
-      const response = await this.apperClient.fetchRecords('task', params);
+      const response = await client.fetchRecords('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -352,32 +320,28 @@ async getByPriority(priority) {
 
       return response.data || [];
     } catch (error) {
-      console.error('Error fetching tasks by priority:', error);
+      console.error(`Error fetching tasks by priority ${priority}:`, error);
       toast.error('Failed to load tasks');
       return [];
     }
   }
 
-async getCompleted() {
+  async getCompleted() {
     try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const params = {
         fields: [
           { field: { Name: "Name" } },
-          { field: { Name: "Tags" } },
-          { field: { Name: "Owner" } },
           { field: { Name: "title" } },
           { field: { Name: "completed" } },
           { field: { Name: "priority" } },
           { field: { Name: "due_date" } },
           { field: { Name: "order" } },
           { field: { Name: "points" } },
-          { field: { Name: "created_at" } }
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } }
         ],
         where: [
           {
@@ -385,13 +349,10 @@ async getCompleted() {
             Operator: "EqualTo",
             Values: [true]
           }
-        ],
-        orderBy: [
-          { fieldName: "order", sorttype: "ASC" }
         ]
       };
 
-      const response = await this.apperClient.fetchRecords('task', params);
+      const response = await client.fetchRecords('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -407,26 +368,22 @@ async getCompleted() {
     }
   }
 
-async getPending() {
+  async getPending() {
     try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const params = {
         fields: [
           { field: { Name: "Name" } },
-          { field: { Name: "Tags" } },
-          { field: { Name: "Owner" } },
           { field: { Name: "title" } },
           { field: { Name: "completed" } },
           { field: { Name: "priority" } },
           { field: { Name: "due_date" } },
           { field: { Name: "order" } },
           { field: { Name: "points" } },
-          { field: { Name: "created_at" } }
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } }
         ],
         where: [
           {
@@ -434,13 +391,10 @@ async getPending() {
             Operator: "EqualTo",
             Values: [false]
           }
-        ],
-        orderBy: [
-          { fieldName: "order", sorttype: "ASC" }
         ]
       };
 
-      const response = await this.apperClient.fetchRecords('task', params);
+      const response = await client.fetchRecords('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -457,28 +411,23 @@ async getPending() {
   }
 
   async getTodayTasks() {
-try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
-      
+    try {
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const today = new Date().toISOString().split('T')[0];
-      
+
       const params = {
         fields: [
           { field: { Name: "Name" } },
-          { field: { Name: "Tags" } },
-          { field: { Name: "Owner" } },
           { field: { Name: "title" } },
           { field: { Name: "completed" } },
           { field: { Name: "priority" } },
           { field: { Name: "due_date" } },
           { field: { Name: "order" } },
           { field: { Name: "points" } },
-          { field: { Name: "created_at" } }
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } }
         ],
         where: [
           {
@@ -486,13 +435,10 @@ try {
             Operator: "EqualTo",
             Values: [today]
           }
-        ],
-        orderBy: [
-          { fieldName: "order", sorttype: "ASC" }
         ]
       };
 
-      const response = await this.apperClient.fetchRecords('task', params);
+      const response = await client.fetchRecords('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -502,22 +448,19 @@ try {
 
       return response.data || [];
     } catch (error) {
-      console.error('Error fetching today tasks:', error);
-      toast.error('Failed to load today tasks');
+      console.error('Error fetching today\'s tasks:', error);
+      toast.error('Failed to load today\'s tasks');
       return [];
     }
   }
 
-async reorderTasks(taskIds) {
+  async reorderTasks(taskIds) {
     try {
-      if (!this.apperClient) {
-        await this.initializeClient();
-        if (!this.apperClient) {
-          throw new Error('ApperClient not initialized. Please ensure ApperSDK is loaded.');
-        }
-      }
+      const client = await this.ensureClient();
+      if (!client) throw new Error('ApperClient not initialized');
+
       const records = taskIds.map((id, index) => ({
-        Id: parseInt(id),
+        Id: id,
         order: index
       }));
 
@@ -525,7 +468,7 @@ async reorderTasks(taskIds) {
         records: records
       };
 
-      const response = await this.apperClient.updateRecord('task', params);
+      const response = await client.updateRecord('task', params);
       
       if (!response.success) {
         console.error(response.message);
@@ -555,4 +498,6 @@ async reorderTasks(taskIds) {
   }
 }
 
-export default new TaskService();
+// Export singleton instance
+const taskService = new TaskService();
+export default taskService;
