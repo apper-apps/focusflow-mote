@@ -50,7 +50,6 @@ async getSettings() {
       
 if (!response.success) {
         console.error(response.message);
-        toast.error(response.message);
         return this.getDefaultSettings();
       }
 
