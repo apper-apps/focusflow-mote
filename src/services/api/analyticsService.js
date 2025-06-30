@@ -56,9 +56,10 @@ async getOverview(timeRange = 'week') {
 
       const response = await this.apperClient.fetchRecords('analytics', params);
       
-      if (!response.success) {
-        console.error(response.message);
-        toast.error(response.message);
+if (!response || !response.success) {
+        const errorMessage = response?.message || 'Failed to fetch analytics data';
+        console.error('Analytics fetch failed:', errorMessage);
+        toast.error(errorMessage);
         return this.getDefaultAnalytics(timeRange);
       }
 
