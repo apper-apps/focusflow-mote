@@ -26,68 +26,6 @@ async function ensureClient() {
 }
 
 class TaskService {
-  // Utility function to add delay for better UX
-  static async delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  // Get all tasks with proper error handling and client initialization
-  static async getAll() {
-    try {
-      // Add small delay for better UX
-      await this.delay(200);
-      
-      // Ensure client is properly initialized
-      const client = await ensureClient();
-      
-      // Set up timeout for the request (30 seconds)
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 30000);
-      });
-      
-      // Configure request parameters using exact field names from schema
-      const params = {
-        fields: [
-          { field: { Name: "Id" } },
-          { field: { Name: "Name" } },
-          { field: { Name: "title" } },
-          { field: { Name: "completed" } },
-          { field: { Name: "priority" } },
-          { field: { Name: "due_date" } },
-          { field: { Name: "order" } },
-          { field: { Name: "points" } },
-          { field: { Name: "Tags" } },
-          { field: { Name: "Owner" } },
-          { field: { Name: "CreatedOn" } },
-          { field: { Name: "created_at" } }
-        ],
-        orderBy: [
-          {
-            fieldName: "order",
-            sorttype: "ASC"
-          }
-        ],
-        pagingInfo: {
-          limit: 100,
-          offset: 0
-        }
-      };
-      
-      // Make the API call with timeout protection
-      const fetchPromise = client.fetchRecords('task', params);
-      const response = await Promise.race([fetchPromise, timeoutPromise]);
-      
-      // Enhanced response validation with detailed logging
-      if (!response) {
-        console.error('No response received from server - possible causes:');
-        console.error('1. Network connectivity issues');
-        console.error('2. Apper backend server unavailable');
-        console.error('3. Invalid API endpoint or table name');
-        console.error('4. Authentication/authorization failure');
-        toast.error('Failed to connect to server. Please check your internet connection.');
-return [];
-      }
-class TaskService {
   constructor() {
     this.apperClient = null;
   }
