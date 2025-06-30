@@ -6,19 +6,43 @@ class AnalyticsService {
     this.initializeClient();
   }
 
-  initializeClient() {
-    if (window.ApperSDK) {
-      const { ApperClient } = window.ApperSDK;
-      this.apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
+initializeClient() {
+    try {
+      if (window.ApperSDK) {
+        const { ApperClient } = window.ApperSDK;
+        this.apperClient = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+        });
+        return true;
+      } else {
+        console.warn('ApperSDK not yet available, will retry during method calls');
+        return false;
+      }
+    } catch (error) {
+      console.error('Failed to initialize ApperClient:', error);
+      return false;
     }
   }
 
-  async getOverview(timeRange = 'week') {
+async getOverview(timeRange = 'week') {
     try {
-      if (!this.apperClient) this.initializeClient();
+      // Attempt to initialize client if not available
+      if (!this.apperClient) {
+        const initialized = this.initializeClient();
+        if (!initialized) {
+          console.warn('ApperSDK not available, using default analytics data');
+          toast.warn('Using offline analytics data - please refresh if you have connectivity issues');
+          return this.getDefaultAnalytics(timeRange);
+        }
+      }
+
+      // Double-check that client is now available
+      if (!this.apperClient) {
+        console.error('ApperClient failed to initialize');
+        toast.error('Unable to connect to analytics service');
+        return this.getDefaultAnalytics(timeRange);
+      }
       
       const params = {
         fields: [
