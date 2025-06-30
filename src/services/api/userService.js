@@ -1,4 +1,6 @@
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import React from "react";
+import Error from "@/components/ui/Error";
 
 class UserService {
 constructor() {
@@ -74,9 +76,9 @@ if (!this.apperClient) {
         ]
       };
 
-      const response = await this.apperClient.fetchRecords('user_stats', params);
+const response = await this.apperClient.fetchRecords('user_stats', params);
       
-      if (!response.success) {
+if (!response.success) {
         console.error(response.message);
         toast.error(response.message);
         return {
@@ -90,7 +92,13 @@ if (!this.apperClient) {
           total_tasks_completed: 0,
           average_focus_time: 0,
           total_focus_time: 0,
-          pomodoros_completed: 0
+          pomodoros_completed: 0,
+          pomodoro_length: 25,
+          short_break_length: 5,
+          long_break_length: 15,
+          auto_start_breaks: false,
+          sound_enabled: true,
+          notifications_enabled: true
         };
       }
 
