@@ -67,16 +67,16 @@ const Layout = () => {
               {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
           </div>
-        </header>
+</header>
 
-        {/* Main Content Area */
+        {/* Main Content Area */}
         <main className="flex-1 overflow-auto">
           <div className={`
             max-w-7xl mx-auto p-6
             ${isMinimalMode ? 'max-w-4xl' : ''}
           `}>
             <Outlet context={{ isMinimalMode }} />
-          </div>
+</div>
         </main>
       </div>
     </div>
