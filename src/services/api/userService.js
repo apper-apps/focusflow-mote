@@ -59,9 +59,9 @@ async getStats() {
       if (!this.apperClient) {
         await this.waitForSDK();
       }
+
       const params = {
         fields: [
-          { field: { Name: "Name" } },
           { field: { Name: "streak" } },
           { field: { Name: "level" } },
           { field: { Name: "total_points" } },
@@ -73,13 +73,17 @@ async getStats() {
           { field: { Name: "average_focus_time" } },
           { field: { Name: "total_focus_time" } },
           { field: { Name: "pomodoros_completed" } }
-        ]
+        ],
+        pagingInfo: {
+          limit: 1,
+          offset: 0
+        }
       };
 
       const response = await this.apperClient.fetchRecords('user_stats', params);
       
       if (!response.success) {
-        console.error(response.message);
+        console.error('Failed to fetch user stats:', response.message);
         return {
           streak: 0,
           level: 1,
@@ -91,29 +95,40 @@ async getStats() {
           total_tasks_completed: 0,
           average_focus_time: 0,
           total_focus_time: 0,
-          pomodoros_completed: 0,
-          pomodoro_length: 25,
-          short_break_length: 5,
-          long_break_length: 15,
-          auto_start_breaks: false,
-          sound_enabled: true,
-          notifications_enabled: true
+          pomodoros_completed: 0
         };
       }
 
-      // Return first record or default values
-      return response.data?.[0] || {
-        streak: 0,
-        level: 1,
-        total_points: 0,
-        today_points: 0,
-        longest_streak: 0,
-        tasks_completed_today: 0,
-        tasks_completed_this_week: 0,
-        total_tasks_completed: 0,
-        average_focus_time: 0,
-        total_focus_time: 0,
-        pomodoros_completed: 0
+      if (!response.data || response.data.length === 0) {
+        // Return default stats if no data exists
+        return {
+          streak: 0,
+          level: 1,
+          total_points: 0,
+          today_points: 0,
+          longest_streak: 0,
+          tasks_completed_today: 0,
+          tasks_completed_this_week: 0,
+          total_tasks_completed: 0,
+          average_focus_time: 0,
+          total_focus_time: 0,
+          pomodoros_completed: 0
+        };
+      }
+
+      const stats = response.data[0];
+      return {
+        streak: stats.streak || 0,
+        level: stats.level || 1,
+        total_points: stats.total_points || 0,
+        today_points: stats.today_points || 0,
+        longest_streak: stats.longest_streak || 0,
+        tasks_completed_today: stats.tasks_completed_today || 0,
+        tasks_completed_this_week: stats.tasks_completed_this_week || 0,
+        total_tasks_completed: stats.total_tasks_completed || 0,
+        average_focus_time: stats.average_focus_time || 0,
+        total_focus_time: stats.total_focus_time || 0,
+        pomodoros_completed: stats.pomodoros_completed || 0
       };
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -131,7 +146,7 @@ async getStats() {
         total_focus_time: 0,
         pomodoros_completed: 0
       };
-}
+    }
   }
 
   async updateStats(updates) {
