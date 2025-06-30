@@ -80,7 +80,6 @@ const response = await this.apperClient.fetchRecords('user_stats', params);
       
 if (!response.success) {
         console.error(response.message);
-        toast.error(response.message);
         return {
           streak: 0,
           level: 1,
@@ -166,11 +165,10 @@ if (!this.apperClient) {
         records: [updateData]
       };
 
-      const response = await this.apperClient.updateRecord('user_stats', params);
+const response = await this.apperClient.updateRecord('user_stats', params);
       
       if (!response.success) {
         console.error(response.message);
-        toast.error(response.message);
         throw new Error(response.message);
       }
 
@@ -183,14 +181,13 @@ if (!this.apperClient) {
           
           failedUpdates.forEach(record => {
             record.errors?.forEach(error => {
-              toast.error(`${error.fieldLabel}: ${error.message}`);
+              console.error(`${error.fieldLabel}: ${error.message}`);
             });
-            if (record.message) toast.error(record.message);
+            if (record.message) console.error(record.message);
           });
         }
         
         if (successfulUpdates.length > 0) {
-          toast.success('Stats updated successfully');
           return successfulUpdates[0].data;
         }
       }
