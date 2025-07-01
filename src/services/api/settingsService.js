@@ -42,7 +42,7 @@ async getSettings() {
           { field: { Name: "language" } },
           { field: { Name: "timezone" } },
           { field: { Name: "email_notifications" } },
-          { field: { Name: "weekly_reports" } },
+{ field: { Name: "weekly_reports" } },
           { field: { Name: "data_retention" } },
           { field: { Name: "privacy_mode" } }
         ]
@@ -55,8 +55,7 @@ if (!response || !response.success) {
         console.error(errorMessage);
         return this.getDefaultSettings();
       }
-
-      // Convert database field names to camelCase for frontend compatibility
+// Convert database field names to camelCase for frontend compatibility
       const rawData = response.data?.[0];
       if (rawData) {
         return {
@@ -85,7 +84,7 @@ if (!response || !response.success) {
         };
       }
 
-return this.getDefaultSettings();
+      return this.getDefaultSettings();
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast.error('Failed to load settings');
@@ -94,31 +93,31 @@ return this.getDefaultSettings();
   }
 
 
-  async createDefaultSettings(apperClient, defaultSettings) {
+async createDefaultSettings(apperClient, defaultSettings) {
     try {
       const createParams = {
         records: [{
           Name: "Default Settings",
-          pomodoro_duration: defaultSettings.pomodoro_duration,
-          short_break_duration: defaultSettings.short_break_duration,
-          long_break_duration: defaultSettings.long_break_duration,
-          auto_start_breaks: defaultSettings.auto_start_breaks,
-          auto_start_pomodoros: defaultSettings.auto_start_pomodoros,
-          notifications: defaultSettings.notifications,
-          sound_enabled: defaultSettings.sound_enabled,
-          daily_goal: defaultSettings.daily_goal,
-          work_start_time: defaultSettings.work_start_time,
-          work_end_time: defaultSettings.work_end_time,
-          motivational_messages: defaultSettings.motivational_messages,
-          streak_reminders: defaultSettings.streak_reminders,
-          weekend_mode: defaultSettings.weekend_mode,
-          theme: defaultSettings.theme,
-          language: defaultSettings.language,
-          timezone: defaultSettings.timezone,
-          email_notifications: defaultSettings.email_notifications,
-          weekly_reports: defaultSettings.weekly_reports,
-          data_retention: defaultSettings.data_retention,
-          privacy_mode: defaultSettings.privacy_mode
+          pomodoro_duration: defaultSettings.pomodoro_duration || 25,
+          short_break_duration: defaultSettings.short_break_duration || 5,
+          long_break_duration: defaultSettings.long_break_duration || 15,
+          auto_start_breaks: defaultSettings.auto_start_breaks || false,
+          auto_start_pomodoros: defaultSettings.auto_start_pomodoros || false,
+          notifications: defaultSettings.notifications || true,
+          sound_enabled: defaultSettings.sound_enabled || true,
+          daily_goal: defaultSettings.daily_goal || 8,
+          work_start_time: defaultSettings.work_start_time || '09:00',
+          work_end_time: defaultSettings.work_end_time || '17:00',
+          motivational_messages: defaultSettings.motivational_messages || true,
+          streak_reminders: defaultSettings.streak_reminders || true,
+          weekend_mode: defaultSettings.weekend_mode || false,
+          theme: defaultSettings.theme || 'light',
+          language: defaultSettings.language || 'en',
+          timezone: defaultSettings.timezone || 'UTC',
+          email_notifications: defaultSettings.email_notifications || false,
+weekly_reports: defaultSettings.weekly_reports || false,
+          data_retention: defaultSettings.data_retention || 30,
+          privacy_mode: defaultSettings.privacy_mode || false
         }]
       };
 
