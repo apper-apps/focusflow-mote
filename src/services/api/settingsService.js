@@ -137,29 +137,30 @@ weekly_reports: defaultSettings.weekly_reports || false,
     }
   }
 
-  getDefaultSettings() {
+getDefaultSettings() {
     return {
       Id: 1,
-      pomodoro_duration: 25,
-      short_break_duration: 5,
-      long_break_duration: 15,
-      auto_start_breaks: true,
-      auto_start_pomodoros: false,
+      Name: "Default Settings",
+      pomodoroDuration: 25,
+      shortBreakDuration: 5,
+      longBreakDuration: 15,
+      autoStartBreaks: true,
+      autoStartPomodoros: false,
       notifications: true,
-      sound_enabled: true,
-      daily_goal: 8,
-      work_start_time: "09:00",
-      work_end_time: "17:00",
-      motivational_messages: true,
-      streak_reminders: true,
-      weekend_mode: false,
+      soundEnabled: true,
+      dailyGoal: 8,
+      workStartTime: "09:00",
+      workEndTime: "17:00",
+      motivationalMessages: true,
+      streakReminders: true,
+      weekendMode: false,
       theme: "light",
       language: "en",
       timezone: "America/New_York",
-      email_notifications: false,
-      weekly_reports: true,
-      data_retention: 365,
-      privacy_mode: false
+      emailNotifications: false,
+      weeklyReports: true,
+      dataRetention: 365,
+      privacyMode: false
     };
   }
 

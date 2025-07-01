@@ -9,19 +9,19 @@ import SettingsService from '@/services/api/settingsService';
 
 const SettingsPage = () => {
 const [settings, setSettings] = useState({
-    pomodoro_duration: 25,
-    short_break_duration: 5,
-    long_break_duration: 15,
-    auto_start_breaks: true,
-    auto_start_pomodoros: false,
+    pomodoroDuration: 25,
+    shortBreakDuration: 5,
+    longBreakDuration: 15,
+    autoStartBreaks: true,
+    autoStartPomodoros: false,
     notifications: true,
-    sound_enabled: true,
-    daily_goal: 8,
-    work_start_time: '09:00',
-    work_end_time: '17:00',
-    motivational_messages: true,
-    streak_reminders: true,
-    weekend_mode: false,
+    soundEnabled: true,
+    dailyGoal: 8,
+    workStartTime: '09:00',
+    workEndTime: '17:00',
+    motivationalMessages: true,
+    streakReminders: true,
+    weekendMode: false,
     theme: 'light'
   });
   
