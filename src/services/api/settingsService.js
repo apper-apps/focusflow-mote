@@ -1,7 +1,8 @@
-import { toast } from "react-toastify";
-import React from "react";
-import Error from "@/components/ui/Error";
+import React from 'react';
+import { toast } from 'react-toastify';
+import Error from '@/components/ui/Error';
 
+// Settings Service for managing user preferences and configuration
 class SettingsService {
   constructor() {
     this.apperClient = null;

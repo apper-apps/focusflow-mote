@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import ApperIcon from '@/components/ApperIcon';
-import MotivationalToast from '@/components/molecules/MotivationalToast';
-import SettingsService from '@/services/api/settingsService';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
+import ApperIcon from "@/components/ApperIcon";
+import Card from "@/components/atoms/Card";
+import Input from "@/components/atoms/Input";
+import Button from "@/components/atoms/Button";
+import MotivationalToast from "@/components/molecules/MotivationalToast";
+import SettingsService from "@/services/api/settingsService";
 
 const SettingsPage = () => {
 const [settings, setSettings] = useState({
@@ -24,15 +25,17 @@ const [settings, setSettings] = useState({
     weekendMode: false,
     theme: 'light'
   });
-  
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
     loadSettings();
   }, []);
 
-const loadSettings = async () => {
+  const loadSettings = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await SettingsService.getSettings();
       if (data) {
@@ -40,6 +43,10 @@ const loadSettings = async () => {
       }
     } catch (err) {
       console.error('Failed to load settings:', err);
+      setError('Failed to load settings. Please try again.');
+      toast.error('Failed to load settings');
+    } finally {
+      setLoading(false);
     }
   };
 
