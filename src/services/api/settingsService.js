@@ -1,4 +1,6 @@
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import React from "react";
+import Error from "@/components/ui/Error";
 
 class SettingsService {
   constructor() {
@@ -48,8 +50,9 @@ async getSettings() {
 
       const response = await this.apperClient.fetchRecords('settings', params);
       
-if (!response.success) {
-        console.error(response.message);
+if (!response || !response.success) {
+        const errorMessage = response?.message || 'Failed to fetch settings';
+        console.error(errorMessage);
         return this.getDefaultSettings();
       }
 
@@ -201,8 +204,8 @@ async updateSettings(updates) {
 
       const response = await this.apperClient.updateRecord('settings', params);
       
-      if (!response.success) {
-console.error(response.message);
+if (!response.success) {
+        console.error(`Failed to update settings: ${response.message}`);
         toast.error(response.message);
         throw new Error(response.message);
       }
@@ -268,7 +271,7 @@ console.error('Error updating settings:', error);
     }
   }
 
-  async getTimerSettings() {
+async getTimerSettings() {
     try {
       const settings = await this.getSettings();
       
@@ -292,7 +295,7 @@ console.error('Error updating settings:', error);
     }
   }
 
-  async getNotificationSettings() {
+async getNotificationSettings() {
     try {
       const settings = await this.getSettings();
       
@@ -316,7 +319,7 @@ console.error('Error updating settings:', error);
     }
   }
 
-  async getThemeSettings() {
+async getThemeSettings() {
     try {
       const settings = await this.getSettings();
       
@@ -326,6 +329,7 @@ console.error('Error updating settings:', error);
       };
     } catch (error) {
       console.error('Error getting theme settings:', error);
+      toast.error('Failed to load theme settings');
       return {
         theme: "light",
         language: "en"
