@@ -1,6 +1,4 @@
-import React from 'react';
-import { toast } from 'react-toastify';
-import Error from '@/components/ui/Error';
+import { toast } from "react-toastify";
 
 // Settings Service for managing user preferences and configuration
 class SettingsService {
@@ -20,7 +18,7 @@ initializeClient() {
   }
 
 async getSettings() {
-    try {
+try {
       if (!this.apperClient) this.initializeClient();
       
       const params = {
@@ -43,17 +41,17 @@ async getSettings() {
           { field: { Name: "language" } },
           { field: { Name: "timezone" } },
           { field: { Name: "email_notifications" } },
+          { field: { Name: "weekly_reports" } },
 { field: { Name: "weekly_reports" } },
           { field: { Name: "data_retention" } },
           { field: { Name: "privacy_mode" } }
-        ]
       };
 
       const response = await this.apperClient.fetchRecords('settings', params);
       
-if (!response || !response.success) {
-        const errorMessage = response?.message || 'Failed to fetch settings';
-        console.error(errorMessage);
+if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
         return this.getDefaultSettings();
       }
 // Convert database field names to camelCase for frontend compatibility
@@ -92,7 +90,6 @@ if (!response || !response.success) {
       return this.getDefaultSettings();
     }
   }
-
 
 async createDefaultSettings(apperClient, defaultSettings) {
     try {
@@ -277,11 +274,11 @@ async getTimerSettings() {
       const settings = await this.getSettings();
       
       return {
-        pomodoro_duration: settings.pomodoro_duration,
-        short_break_duration: settings.short_break_duration,
-        long_break_duration: settings.long_break_duration,
-        auto_start_breaks: settings.auto_start_breaks,
-        auto_start_pomodoros: settings.auto_start_pomodoros
+        pomodoro_duration: settings.pomodoroDuration,
+        short_break_duration: settings.shortBreakDuration,
+        long_break_duration: settings.longBreakDuration,
+        auto_start_breaks: settings.autoStartBreaks,
+        auto_start_pomodoros: settings.autoStartPomodoros
       };
     } catch (error) {
       console.error('Error getting timer settings:', error);
@@ -302,10 +299,10 @@ async getNotificationSettings() {
       
       return {
         notifications: settings.notifications,
-        sound_enabled: settings.sound_enabled,
-        motivational_messages: settings.motivational_messages,
-        streak_reminders: settings.streak_reminders,
-        email_notifications: settings.email_notifications
+        sound_enabled: settings.soundEnabled,
+        motivational_messages: settings.motivationalMessages,
+        streak_reminders: settings.streakReminders,
+        email_notifications: settings.emailNotifications
       };
     } catch (error) {
       console.error('Error getting notification settings:', error);
