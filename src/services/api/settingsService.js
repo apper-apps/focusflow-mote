@@ -41,10 +41,10 @@ try {
           { field: { Name: "language" } },
           { field: { Name: "timezone" } },
           { field: { Name: "email_notifications" } },
-          { field: { Name: "weekly_reports" } },
 { field: { Name: "weekly_reports" } },
           { field: { Name: "data_retention" } },
           { field: { Name: "privacy_mode" } }
+        ]
       };
 
       const response = await this.apperClient.fetchRecords('settings', params);
